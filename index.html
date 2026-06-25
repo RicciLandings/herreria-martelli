@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Herrería Martelli — Hierro trabajado a medida</title>
+<meta name="description" content="Herrería Martelli. Pérgolas, portones, rejas y carpintería metálica hecha a mano, a medida.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15140f;
+    --paper:#ece6da;
+    --paper-deep:#dfd7c6;
+    --steel:#2b2a26;
+    --ember:#a8512b;
+    --grey:#6f6a5c;
+    --line: rgba(21,20,15,0.14);
+    --line-light: rgba(236,230,218,0.22);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:0;
+    line-height:1.05;
+  }
+  a{color:inherit; text-decoration:none;}
+  img{display:block; max-width:100%;}
+  .eyebrow{
+    font-size:0.72rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--grey);
+    font-weight:500;
+  }
+
+  /* ---------- grid motif (signature element, riffs on the iron-paned door) ---------- */
+  .grid-mark{
+    display:inline-flex;
+    gap:3px;
+    width:22px;
+    height:22px;
+  }
+  .grid-mark span{
+    flex:1; background:currentColor; opacity:0.85;
+  }
+  .grid-mark{flex-wrap:wrap;}
+  .grid-mark span{width:8px; height:8px;}
+
+  /* ---------- nav ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 6vw;
+    color:var(--paper);
+    transition:background 0.35s ease, color 0.35s ease, padding 0.35s ease, box-shadow 0.35s ease;
+  }
+  header.solid{
+    background:var(--paper);
+    color:var(--ink);
+    padding:14px 6vw;
+    box-shadow:0 1px 0 var(--line);
+  }
+  .brand{
+    font-family:'Fraunces', serif;
+    font-size:1.15rem;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+  nav{display:flex; gap:34px;}
+  nav a{
+    font-size:0.82rem;
+    letter-spacing:0.04em;
+    position:relative;
+    padding-bottom:4px;
+  }
+  nav a::after{
+    content:"";
+    position:absolute; left:0; right:100%; bottom:0;
+    height:1px; background:currentColor;
+    transition:right 0.3s ease;
+  }
+  nav a:hover::after{right:0;}
+  .nav-toggle{display:none;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    height:100vh;
+    min-height:560px;
+    display:flex;
+    align-items:flex-end;
+    overflow:hidden;
+    background:var(--steel);
+  }
+  .hero img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    filter:saturate(0.92) contrast(1.02);
+  }
+  .hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(18,17,13,0.18) 0%, rgba(18,17,13,0.12) 35%, rgba(18,17,13,0.86) 100%);
+  }
+  .hero-content{
+    position:relative; z-index:2;
+    color:var(--paper);
+    padding:0 6vw 9vh;
+    max-width:760px;
+  }
+  .hero-content .eyebrow{color:var(--paper); opacity:0.75; margin-bottom:18px; display:flex; align-items:center; gap:10px;}
+  .hero h1{
+    font-size:clamp(2.6rem, 6.4vw, 5rem);
+    letter-spacing:-0.01em;
+  }
+  .hero p{
+    margin:22px 0 0;
+    font-size:1.05rem;
+    font-weight:300;
+    max-width:480px;
+    color:var(--paper);
+    opacity:0.88;
+  }
+  .scroll-cue{
+    position:absolute; bottom:28px; right:6vw; z-index:2;
+    color:var(--paper); opacity:0.6;
+    font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .scroll-cue .stem{width:1px; height:34px; background:currentColor;}
+
+  /* ---------- section shell ---------- */
+  section{padding:120px 6vw;}
+  .section-head{
+    display:flex; align-items:baseline; gap:18px;
+    margin-bottom:54px;
+    flex-wrap:wrap;
+  }
+  .section-head h2{font-size:clamp(1.8rem, 3vw, 2.5rem);}
+  .rule{
+    flex:1; height:1px; background:var(--line); min-width:60px;
+  }
+
+  /* ---------- about ---------- */
+  .about{
+    background:var(--paper);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:80px;
+    align-items:start;
+  }
+  .about p{
+    font-size:1.08rem;
+    line-height:1.75;
+    color:var(--steel);
+    font-weight:300;
+    max-width:520px;
+  }
+  .about p + p{margin-top:18px;}
+  .about-figure{
+    border:1px solid var(--line);
+    padding:30px;
+    font-family:'Fraunces', serif;
+  }
+  .about-figure .grid-mark{color:var(--ember); margin-bottom:24px;}
+  .about-figure blockquote{
+    margin:0; font-size:1.3rem; font-weight:500; line-height:1.4;
+    color:var(--steel);
+  }
+  .about-figure cite{
+    display:block; margin-top:18px; font-family:'Work Sans', sans-serif;
+    font-size:0.78rem; letter-spacing:0.06em; color:var(--grey); font-style:normal;
+  }
+
+  /* ---------- services ---------- */
+  .services{background:var(--paper-deep);}
+  .service-list{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .service{
+    background:var(--paper-deep);
+    padding:38px;
+  }
+  .service h3{
+    font-size:1.2rem; font-weight:500; margin-bottom:10px;
+  }
+  .service p{
+    margin:0; color:var(--grey); font-size:0.95rem; line-height:1.6; font-weight:400;
+    max-width:340px;
+  }
+
+  /* ---------- gallery ---------- */
+  .gallery{background:var(--paper);}
+  .gallery-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:28px;
+  }
+  figure{margin:0;}
+  .frame{
+    position:relative;
+    overflow:hidden;
+    aspect-ratio:4/5;
+    background:var(--steel);
+  }
+  .frame img{
+    width:100%; height:100%; object-fit:cover;
+    transition:transform 0.6s ease;
+  }
+  .frame:hover img{transform:scale(1.04);}
+  .frame .panes{
+    position:absolute; inset:0;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(4,1fr);
+    pointer-events:none;
+  }
+  .frame .panes span{border:1px solid rgba(236,230,218,0);
+    transition:border-color 0.5s ease;
+  }
+  .frame:hover .panes span{border-color:rgba(236,230,218,0.55);}
+  figcaption{
+    margin-top:14px;
+    font-size:0.85rem;
+    color:var(--grey);
+    display:flex; justify-content:space-between;
+  }
+  figcaption .tag{color:var(--ink); font-weight:500;}
+  .gallery-note{
+    margin-top:40px;
+    font-size:0.82rem;
+    color:var(--grey);
+    border-top:1px solid var(--line);
+    padding-top:18px;
+  }
+
+  /* ---------- contact ---------- */
+  .contact{
+    background:var(--steel);
+    color:var(--paper);
+  }
+  .contact .section-head h2{color:var(--paper);}
+  .contact .rule{background:var(--line-light);}
+  .contact-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:80px;
+  }
+  .contact p.lead{
+    font-size:1.3rem; font-weight:300; line-height:1.55;
+    max-width:460px; color:var(--paper); opacity:0.92;
+  }
+  .cta{
+    display:inline-flex; align-items:center; gap:12px;
+    margin-top:34px;
+    padding:15px 28px;
+    border:1px solid var(--paper);
+    color:var(--paper);
+    font-size:0.85rem; letter-spacing:0.04em;
+    transition:background 0.3s ease, color 0.3s ease;
+  }
+  .cta:hover{background:var(--ember); border-color:var(--ember); color:var(--paper);}
+  .contact-list{list-style:none; margin:0; padding:0;}
+  .contact-list li{
+    padding:20px 0;
+    border-bottom:1px solid var(--line-light);
+    display:flex; justify-content:space-between; gap:20px;
+    font-size:0.95rem;
+  }
+  .contact-list li:first-child{border-top:1px solid var(--line-light);}
+  .contact-list span.label{color:var(--grey); font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase;}
+  .contact-list a:hover{color:var(--ember);}
+
+  footer{
+    background:var(--ink);
+    color:var(--paper);
+    padding:30px 6vw;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:0.78rem;
+    opacity:0.7;
+    flex-wrap:wrap; gap:10px;
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:880px){
+    nav{
+      position:fixed; top:0; right:0; height:100vh; width:72vw; max-width:320px;
+      background:var(--ink); color:var(--paper);
+      flex-direction:column; justify-content:center; gap:30px;
+      padding:0 40px;
+      transform:translateX(100%);
+      transition:transform 0.4s ease;
+    }
+    nav.open{transform:translateX(0);}
+    .nav-toggle{
+      display:flex; flex-direction:column; gap:5px; cursor:pointer;
+      background:none; border:none; padding:6px; z-index:60;
+    }
+    .nav-toggle span{width:22px; height:1px; background:currentColor;}
+    .about, .contact-grid{grid-template-columns:1fr; gap:50px;}
+    .service-list{grid-template-columns:1fr;}
+    .gallery-grid{grid-template-columns:1fr 1fr; gap:18px;}
+    section{padding:80px 6vw;}
+  }
+  @media (max-width:560px){
+    .gallery-grid{grid-template-columns:1fr;}
+    .hero-content{padding-bottom:14vh;}
+    .scroll-cue{display:none;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header id="site-header">
+  <div class="brand">Herrería Martelli</div>
+  <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="mainNav">
+    <a href="#trabajos">Trabajos</a>
+    <a href="#servicios">Servicios</a>
+    <a href="#sobre">Sobre el taller</a>
+    <a href="#contacto">Contacto</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <img src="images/pergola-urbana.jpg" alt="Pérgola de hierro fabricada por Herrería Martelli, vista urbana">
+  <div class="hero-content">
+    <div class="eyebrow">
+      <span class="grid-mark"><span></span><span></span><span></span><span></span></span>
+      Herrería · Buenos Aires
+    </div>
+    <h1>Hierro trabajado<br>a mano, hecho a medida.</h1>
+    <p>Pérgolas, portones, rejas y carpintería metálica para tu casa o tu negocio. Cada pieza se diseña y se fabrica a medida del lugar donde va a vivir.</p>
+  </div>
+  <div class="scroll-cue"><span>Ver trabajos</span><span class="stem"></span></div>
+</section>
+
+<section class="about" id="sobre">
+  <div>
+    <div class="section-head">
+      <span class="eyebrow">El taller</span>
+      <div class="rule"></div>
+    </div>
+    <p>Herrería Martelli fabrica estructuras y aberturas de hierro pensadas para durar: desde pérgolas y parasoles para terrazas hasta portones, rejas y puertas combinadas con vidrio.</p>
+    <p>Trabajamos a medida, desde el plano hasta la instalación, cuidando que cada pieza se integre al espacio en lugar de imponerse sobre él.</p>
+  </div>
+  <div class="about-figure">
+    <span class="grid-mark"><span></span><span></span><span></span><span></span></span>
+    <blockquote>“El hierro bien trabajado no se nota: sostiene todo y no molesta a la vista.”</blockquote>
+    <cite>Filosofía del taller</cite>
+  </div>
+</section>
+
+<section class="services" id="servicios">
+  <div class="section-head">
+    <span class="eyebrow">Qué hacemos</span>
+    <div class="rule"></div>
+    <h2>Servicios</h2>
+  </div>
+  <div class="service-list">
+    <div class="service">
+      <h3>Pérgolas y estructuras</h3>
+      <p>Cubiertas y estructuras para terrazas, patios y frentes, en hierro pintado o con tratamiento anticorrosivo.</p>
+    </div>
+    <div class="service">
+      <h3>Portones y rejas</h3>
+      <p>A medida para casas, edificios y locales, con foco en seguridad sin perder estética.</p>
+    </div>
+    <div class="service">
+      <h3>Puertas y aberturas con vidrio</h3>
+      <p>Marcos de hierro combinados con vidrio repartido, ideales para divisiones internas y accesos.</p>
+    </div>
+    <div class="service">
+      <h3>Trabajos a medida</h3>
+      <p>Piezas especiales, reparaciones y proyectos puntuales según el plano o la idea que traigas.</p>
+    </div>
+  </div>
+</section>
+
+<section class="gallery" id="trabajos">
+  <div class="section-head">
+    <span class="eyebrow">Algunos trabajos</span>
+    <div class="rule"></div>
+    <h2>Trabajos</h2>
+  </div>
+  <div class="gallery-grid">
+    <figure>
+      <div class="frame">
+        <img src="images/pergola-terraza.jpg" alt="Pérgola de hierro en terraza con plantas">
+        <div class="panes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <figcaption><span class="tag">Pérgola</span><span>Terraza</span></figcaption>
+    </figure>
+    <figure>
+      <div class="frame">
+        <img src="images/pergola-urbana.jpg" alt="Pérgola de hierro con vista urbana">
+        <div class="panes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <figcaption><span class="tag">Pérgola</span><span>Vista urbana</span></figcaption>
+    </figure>
+    <figure>
+      <div class="frame">
+        <img src="images/puerta-vidrio.jpg" alt="Puerta y mampara de hierro con vidrio repartido">
+        <div class="panes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <figcaption><span class="tag">Aberturas</span><span>Hierro y vidrio</span></figcaption>
+    </figure>
+  </div>
+  <p class="gallery-note">Para sumar más fotos: guardá la imagen en la carpeta <code>images/</code> y agregá un bloque <code>&lt;figure&gt;</code> nuevo como los de arriba.</p>
+</section>
+
+<section class="contact" id="contacto">
+  <div class="section-head">
+    <span class="eyebrow">Contacto</span>
+    <div class="rule"></div>
+    <h2>Hablemos de tu proyecto</h2>
+  </div>
+  <div class="contact-grid">
+    <div>
+      <p class="lead">Contanos qué necesitás —una pérgola, un portón, una puerta— y te respondemos con un presupuesto.</p>
+      <a class="cta" href="https://wa.me/5491100000000" target="_blank" rel="noopener">
+        Escribir por WhatsApp →
+      </a>
+    </div>
+    <ul class="contact-list">
+      <li><span class="label">Teléfono</span><a href="tel:+5491100000000">+54 9 11 0000-0000</a></li>
+      <li><span class="label">Email</span><a href="mailto:contacto@herreriamartelli.com">contacto@herreriamartelli.com</a></li>
+      <li><span class="label">Zona</span><span>Buenos Aires, Argentina</span></li>
+      <li><span class="label">Instagram</span><a href="#" target="_blank" rel="noopener">@herreriamartelli</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <span>© <span id="year"></span> Herrería Martelli</span>
+  <span>Hecho a mano en Buenos Aires</span>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  const header = document.getElementById('site-header');
+  const onScroll = () => {
+    if(window.scrollY > 40){ header.classList.add('solid'); }
+    else{ header.classList.remove('solid'); }
+  };
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+
+  const navToggle = document.getElementById('navToggle');
+  const mainNav = document.getElementById('mainNav');
+  navToggle.addEventListener('click', () => mainNav.classList.toggle('open'));
+  mainNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mainNav.classList.remove('open')));
+</script>
+
+</body>
+</html>
