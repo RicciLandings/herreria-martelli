@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Prototipo A · Forja — Herrería Martelli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f0f0e;--card:#1a1a18;--txt:#f1ede6;--mute:#9a958b;--hot:#e8692c;--line:rgba(241,237,230,.12);}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--txt);font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  a{color:inherit;text-decoration:none}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+  h1,h2,h3{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;line-height:.92;letter-spacing:.01em}
+  .tag{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--hot);font-weight:500}
+
+  .proto{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99;background:var(--hot);color:#111;font-size:.68rem;font-weight:500;padding:4px 10px;letter-spacing:.1em;text-transform:uppercase}
+
+  header{display:flex;justify-content:space-between;align-items:center;padding:20px;position:absolute;top:0;left:0;right:0;z-index:5}
+  .logo{font-family:'Barlow Condensed';font-weight:800;font-size:1.3rem;letter-spacing:.04em;text-transform:uppercase}
+  .logo b{color:var(--hot)}
+  header a.call{font-size:.85rem;border:1px solid var(--line);padding:8px 14px}
+
+  .hero{position:relative;height:92svh;min-height:540px;display:flex;align-items:flex-end}
+  .hero img{position:absolute;inset:0}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,15,14,.3),rgba(15,15,14,.1) 40%,var(--bg) 98%)}
+  .hero-in{position:relative;z-index:2;padding:0 20px 28px}
+  .hero h1{font-size:clamp(3.4rem,17vw,8rem);font-weight:800;margin:12px 0 16px}
+  .hero h1 span{color:var(--hot)}
+  .hero p{color:var(--mute);max-width:420px;line-height:1.55}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 20px}
+  .stats div{padding:18px 0;text-align:center}
+  .stats div+div{border-left:1px solid var(--line)}
+  .stats strong{display:block;font-family:'Barlow Condensed';font-size:2rem;font-weight:700}
+  .stats small{color:var(--mute);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em}
+
+  section{padding:64px 20px}
+  section h2{font-size:clamp(2.6rem,12vw,5rem);font-weight:800;margin:10px 0 28px}
+
+  .svc{border-top:1px solid var(--line)}
+  .svc details{border-bottom:1px solid var(--line)}
+  .svc summary{list-style:none;display:flex;align-items:center;gap:16px;padding:20px 0;cursor:pointer}
+  .svc summary::-webkit-details-marker{display:none}
+  .svc .n{font-family:'Barlow Condensed';color:var(--hot);font-size:1rem;width:28px}
+  .svc h3{font-size:1.7rem;font-weight:700;flex:1}
+  .svc .pl{font-size:1.6rem;color:var(--mute);transition:transform .25s}
+  .svc details[open] .pl{transform:rotate(45deg);color:var(--hot)}
+  .svc details p{color:var(--mute);line-height:1.6;padding:0 0 22px 44px}
+
+  .works{display:flex;flex-direction:column;gap:14px}
+  .work{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--card)}
+  .work::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.8))}
+  .work div{position:absolute;left:18px;bottom:16px;z-index:2}
+  .work h3{font-size:1.9rem;font-weight:700}
+  .work span{font-size:.8rem;color:var(--mute)}
+
+  .cta-box{background:var(--hot);color:#111;padding:40px 24px;margin:0 20px}
+  .cta-box h2{color:#111;margin:0 0 14px;font-size:clamp(2.4rem,11vw,4.4rem)}
+  .cta-box p{margin-bottom:22px;line-height:1.5}
+  .cta-box a{display:block;background:#111;color:var(--txt);text-align:center;padding:16px;font-weight:500}
+
+  footer{padding:36px 20px;color:var(--mute);font-size:.8rem;display:flex;flex-direction:column;gap:6px}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:1fr 1.6fr;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(15,15,14,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  .bar a{height:50px;display:flex;align-items:center;justify-content:center;font-weight:500;font-size:.92rem}
+  .bar .b1{border:1px solid var(--line)}
+  .bar .b2{background:var(--hot);color:#111}
+
+  @media (min-width:800px){
+    body{padding-bottom:0}
+    .bar{display:none}
+    header,section,.stats,.cta-box{padding-left:6vw;padding-right:6vw}
+    .stats{margin:0 6vw;padding:0}
+    .hero-in{padding:0 6vw 60px}
+    .works{display:grid;grid-template-columns:repeat(3,1fr)}
+    .cta-box{margin:0 6vw;padding:60px}
+    .cta-box a{display:inline-block;padding:16px 40px}
+  }
+</style>
+</head>
+<body>
+<div class="proto">Prototipo A · Forja</div>
+
+<header>
+  <div class="logo">Martelli<b>.</b></div>
+  <a class="call" href="tel:+5491100000000">Llamar</a>
+</header>
+
+<section class="hero" style="padding:0">
+  <img src="../images/pergola-urbana.jpg" alt="Pérgola de hierro con vista urbana">
+  <div class="hero-in">
+    <span class="tag">Herrería · Buenos Aires</span>
+    <h1>Hierro<br>a <span>medida</span>.</h1>
+    <p>Pérgolas, portones, rejas y aberturas. Diseñamos, fabricamos e instalamos.</p>
+  </div>
+</section>
+
+<div class="stats">
+  <div><strong>100%</strong><small>A medida</small></div>
+  <div><strong>1:1</strong><small>Del plano</small></div>
+  <div><strong>+</strong><small>Instalación</small></div>
+</div>
+
+<section>
+  <span class="tag">Qué hacemos</span>
+  <h2>Servicios</h2>
+  <div class="svc">
+    <details open><summary><span class="n">01</span><h3>Pérgolas</h3><span class="pl">+</span></summary><p>Cubiertas y estructuras para terrazas, patios y frentes, con tratamiento anticorrosivo.</p></details>
+    <details><summary><span class="n">02</span><h3>Portones y rejas</h3><span class="pl">+</span></summary><p>Para casas, edificios y locales. Seguridad sin perder estética.</p></details>
+    <details><summary><span class="n">03</span><h3>Hierro y vidrio</h3><span class="pl">+</span></summary><p>Puertas y divisiones con vidrio repartido, para interiores y accesos.</p></details>
+    <details><summary><span class="n">04</span><h3>A medida</h3><span class="pl">+</span></summary><p>Piezas especiales, reparaciones y proyectos según tu plano o idea.</p></details>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <span class="tag">Trabajos</span>
+  <h2>Obra hecha</h2>
+  <div class="works">
+    <div class="work"><img loading="lazy" src="../images/pergola-terraza.jpg" alt="Pérgola en terraza"><div><h3>Pérgola</h3><span>Terraza con plantas</span></div></div>
+    <div class="work"><img loading="lazy" src="../images/puerta-vidrio.jpg" alt="Puerta de hierro y vidrio"><div><h3>Hierro y vidrio</h3><span>Puerta y mampara</span></div></div>
+    <div class="work"><img loading="lazy" src="../images/pergola-urbana.jpg" alt="Pérgola urbana"><div><h3>Pérgola</h3><span>Vista urbana</span></div></div>
+  </div>
+</section>
+
+<div class="cta-box">
+  <h2>¿Tenés un proyecto?</h2>
+  <p>Mandanos medidas o una foto del lugar y te pasamos presupuesto.</p>
+  <a href="https://wa.me/5491100000000" target="_blank" rel="noopener">Escribir por WhatsApp →</a>
+</div>
+
+<footer>
+  <span>© Herrería Martelli · Buenos Aires</span>
+  <span>contacto@herreriamartelli.com · @herreriamartelli</span>
+</footer>
+
+<div class="bar">
+  <a class="b1" href="tel:+5491100000000">Llamar</a>
+  <a class="b2" href="https://wa.me/5491100000000" target="_blank" rel="noopener">WhatsApp · Presupuesto</a>
+</div>
+</body>
+</html>

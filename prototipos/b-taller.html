@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Prototipo B · Taller — Herrería Martelli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f6f5f2;--card:#fff;--ink:#1c1d1f;--mute:#6d6e72;--acc:#2f5d50;--acc-soft:#e3ece8;--line:#e4e2dc;--r:18px}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+  .proto{position:fixed;bottom:10px;left:10px;z-index:99;background:var(--ink);color:#fff;font-size:.68rem;padding:4px 10px;border-radius:99px}
+
+  header{position:sticky;top:0;z-index:20;background:rgba(246,245,242,.9);backdrop-filter:blur(10px)}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .logo{font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:8px}
+  .logo i{width:22px;height:22px;border:2px solid var(--ink);border-radius:5px;background:linear-gradient(var(--ink),var(--ink)) center/2px 100% no-repeat,linear-gradient(var(--ink),var(--ink)) center/100% 2px no-repeat}
+  .pill{background:var(--ink);color:#fff;font-size:.82rem;padding:9px 16px;border-radius:99px}
+
+  .hero{margin-top:6px;border-radius:var(--r);overflow:hidden;position:relative;aspect-ratio:4/5;max-height:620px;width:100%}
+  .hero .chip{position:absolute;left:14px;top:14px;background:#fff;font-size:.75rem;padding:6px 12px;border-radius:99px}
+  h1{font-size:clamp(2.1rem,8.5vw,3.6rem);line-height:1.02;letter-spacing:-.03em;margin:26px 0 12px}
+  .lead{color:var(--mute);line-height:1.55;font-size:1.02rem;max-width:520px}
+
+  .chips{display:flex;gap:8px;overflow-x:auto;margin:22px -16px 0;padding:0 16px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chips span{flex:none;border:1px solid var(--line);background:var(--card);padding:9px 14px;border-radius:99px;font-size:.85rem}
+
+  section{padding:56px 0 0}
+  h2{font-size:1.6rem;letter-spacing:-.02em;margin-bottom:18px;display:flex;justify-content:space-between;align-items:baseline}
+  h2 small{font-size:.8rem;color:var(--mute);font-weight:400}
+
+  .gal{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gal a{border-radius:14px;overflow:hidden;aspect-ratio:3/4;position:relative}
+  .gal a:first-child{grid-column:span 2;aspect-ratio:16/11}
+  .gal a span{position:absolute;left:10px;bottom:10px;background:rgba(255,255,255,.92);font-size:.75rem;padding:5px 10px;border-radius:99px}
+
+  .steps{display:grid;gap:10px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;gap:14px}
+  .step b{flex:none;width:34px;height:34px;border-radius:50%;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;font-size:.9rem}
+  .step h3{font-size:1rem;margin-bottom:3px}
+  .step p{color:var(--mute);font-size:.9rem;line-height:1.45}
+
+  .form{background:var(--ink);color:#fff;border-radius:var(--r);padding:24px 18px;margin-top:56px}
+  .form h2{color:#fff;margin-bottom:6px}
+  .form > p{color:#b9bac0;font-size:.92rem;margin-bottom:20px}
+  .form label{display:block;font-size:.78rem;color:#b9bac0;margin:14px 0 6px}
+  .opts{display:flex;flex-wrap:wrap;gap:8px}
+  .opts input{display:none}
+  .opts span{display:block;border:1px solid #3a3b3f;padding:10px 14px;border-radius:99px;font-size:.88rem;cursor:pointer}
+  .opts input:checked + span{background:#fff;color:var(--ink);border-color:#fff}
+  .form input[type=text],.form textarea{width:100%;background:#2a2b2e;border:1px solid #3a3b3f;color:#fff;border-radius:12px;padding:14px;font:inherit;font-size:16px}
+  .form button{width:100%;margin-top:20px;height:54px;border:0;border-radius:99px;background:#3fb27f;color:#fff;font:inherit;font-weight:500;font-size:1rem;cursor:pointer}
+
+  footer{padding:36px 0 calc(36px + env(safe-area-inset-bottom));color:var(--mute);font-size:.82rem;line-height:1.7}
+
+  @media (min-width:800px){
+    .top{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center;margin-top:16px}
+    .top .hero{order:2;margin:0}
+    .gal{grid-template-columns:2fr 1fr 1fr}
+    .gal a:first-child{grid-column:auto;aspect-ratio:auto}
+    .steps{grid-template-columns:repeat(4,1fr)}
+    .step{flex-direction:column}
+    .form{display:grid;grid-template-columns:1fr 1.2fr;gap:40px;padding:44px}
+  }
+</style>
+</head>
+<body>
+<div class="proto">Prototipo B · Taller</div>
+
+<header><div class="wrap">
+  <div class="logo"><i></i>Herrería Martelli</div>
+  <a class="pill" href="#presupuesto">Presupuesto</a>
+</div></header>
+
+<main class="wrap">
+  <div class="top">
+    <div class="hero"><img src="../images/pergola-terraza.jpg" alt="Pérgola de hierro en terraza"><span class="chip">● Buenos Aires</span></div>
+    <div>
+      <h1>Hierro a medida para tu casa o negocio.</h1>
+      <p class="lead">Pérgolas, portones, rejas y aberturas con vidrio. Medimos, diseñamos, fabricamos e instalamos.</p>
+      <div class="chips"><span>Pérgolas</span><span>Portones</span><span>Rejas</span><span>Hierro y vidrio</span><span>Reparaciones</span></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Trabajos</h2>
+    <div class="gal">
+      <a href="../images/pergola-urbana.jpg"><img loading="lazy" src="../images/pergola-urbana.jpg" alt="Pérgola urbana"><span>Pérgola · Vista urbana</span></a>
+      <a href="../images/puerta-vidrio.jpg"><img loading="lazy" src="../images/puerta-vidrio.jpg" alt="Puerta hierro y vidrio"><span>Hierro y vidrio</span></a>
+      <a href="../images/pergola-terraza.jpg"><img loading="lazy" src="../images/pergola-terraza.jpg" alt="Pérgola terraza"><span>Terraza</span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cómo trabajamos</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><div><h3>Contacto</h3><p>Nos mandás fotos y medidas aproximadas.</p></div></div>
+      <div class="step"><b>2</b><div><h3>Medición</h3><p>Vamos al lugar y tomamos medidas exactas.</p></div></div>
+      <div class="step"><b>3</b><div><h3>Fabricación</h3><p>Hacemos la pieza en el taller, a medida.</p></div></div>
+      <div class="step"><b>4</b><div><h3>Instalación</h3><p>La colocamos y dejamos todo terminado.</p></div></div>
+    </div>
+  </section>
+
+  <form class="form" id="presupuesto">
+    <div>
+      <h2>Pedí tu presupuesto</h2>
+      <p>Completá en 20 segundos y se abre WhatsApp con el mensaje listo.</p>
+    </div>
+    <div>
+      <label>¿Qué necesitás?</label>
+      <div class="opts">
+        <label><input type="radio" name="t" value="una pérgola" checked><span>Pérgola</span></label>
+        <label><input type="radio" name="t" value="un portón"><span>Portón</span></label>
+        <label><input type="radio" name="t" value="rejas"><span>Rejas</span></label>
+        <label><input type="radio" name="t" value="una puerta con vidrio"><span>Puerta/vidrio</span></label>
+        <label><input type="radio" name="t" value="otro trabajo"><span>Otro</span></label>
+      </div>
+      <label for="z">Barrio / localidad</label>
+      <input type="text" id="z" placeholder="Ej: Palermo">
+      <label for="d">Detalle (opcional)</label>
+      <textarea id="d" rows="3" placeholder="Medidas aproximadas, ideas…"></textarea>
+      <button type="submit">Enviar por WhatsApp</button>
+    </div>
+  </form>
+
+  <footer>
+    Herrería Martelli · Buenos Aires<br>
+    <a href="tel:+5491100000000">+54 9 11 0000-0000</a> · contacto@herreriamartelli.com · @herreriamartelli
+  </footer>
+</main>
+
+<script>
+  document.getElementById('presupuesto').addEventListener('submit', e => {
+    e.preventDefault();
+    const t = document.querySelector('input[name=t]:checked').value;
+    const z = document.getElementById('z').value.trim();
+    const d = document.getElementById('d').value.trim();
+    let msg = `Hola! Quiero presupuesto para ${t}`;
+    if (z) msg += ` en ${z}`;
+    if (d) msg += `. ${d}`;
+    window.open('https://wa.me/5491100000000?text=' + encodeURIComponent(msg), '_blank');
+  });
+</script>
+</body>
+</html>

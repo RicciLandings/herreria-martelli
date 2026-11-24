@@ -94,12 +94,15 @@
   }
   nav a:hover::after{right:0;}
   .nav-toggle{display:none;}
+  .nav-backdrop{display:none;}
+  .wa-float{display:none;}
 
   /* ---------- hero ---------- */
   .hero{
     position:relative;
     height:100vh;
     min-height:560px;
+    height:100svh;
     display:flex;
     align-items:flex-end;
     overflow:hidden;
@@ -314,16 +317,61 @@
       display:flex; flex-direction:column; gap:5px; cursor:pointer;
       background:none; border:none; padding:6px; z-index:60;
     }
-    .nav-toggle span{width:22px; height:1px; background:currentColor;}
+    .nav-toggle{width:44px; height:44px; align-items:center; justify-content:center; margin-right:-10px;}
+    .nav-toggle span{width:22px; height:2px; background:currentColor; transition:transform .3s ease, opacity .3s ease;}
+    body.menu-open .nav-toggle{color:var(--paper);}
+    body.menu-open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    body.menu-open .nav-toggle span:nth-child(2){opacity:0;}
+    body.menu-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+    body.menu-open{overflow:hidden;}
+    nav a{font-family:'Fraunces',serif; font-size:1.6rem; padding:6px 0;}
+    .nav-backdrop{display:block; position:fixed; inset:0; z-index:40; background:rgba(21,20,15,.5); opacity:0; pointer-events:none; transition:opacity .3s ease;}
+    body.menu-open .nav-backdrop{opacity:1; pointer-events:auto;}
+    header{z-index:55;}
     .about, .contact-grid{grid-template-columns:1fr; gap:50px;}
     .service-list{grid-template-columns:1fr;}
     .gallery-grid{grid-template-columns:1fr 1fr; gap:18px;}
     section{padding:80px 6vw;}
   }
   @media (max-width:560px){
-    .gallery-grid{grid-template-columns:1fr;}
-    .hero-content{padding-bottom:14vh;}
+    header{padding:14px 20px;}
+    header.solid{padding:10px 20px;}
+    section{padding:64px 20px;}
+    .section-head{margin-bottom:32px; gap:12px;}
+    .hero{min-height:520px;}
+    .hero-content{padding:0 20px 120px;}
+    .hero h1{font-size:2.4rem;}
+    .hero p{font-size:1rem; margin-top:16px;}
     .scroll-cue{display:none;}
+    .about{gap:36px;}
+    .about p{font-size:1rem; line-height:1.7;}
+    .about-figure{padding:24px;}
+    .about-figure blockquote{font-size:1.15rem;}
+    .service{padding:24px 20px;}
+    /* galería: carrusel horizontal con snap */
+    .gallery-grid{
+      display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory;
+      margin:0 -20px; padding:0 20px 8px; scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
+    }
+    .gallery-grid::-webkit-scrollbar{display:none;}
+    .gallery-grid figure{flex:0 0 82%; scroll-snap-align:center;}
+    .gallery-note{display:none;}
+    .contact p.lead{font-size:1.12rem;}
+    .cta{display:flex; justify-content:center; width:100%; padding:16px;}
+    .contact-list li{flex-direction:column; gap:4px; padding:16px 0;}
+    .contact-list a{word-break:break-word;}
+    footer{flex-direction:column; align-items:flex-start; padding:24px 20px calc(90px + env(safe-area-inset-bottom));}
+    /* botón flotante de WhatsApp */
+    .wa-float{
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      position:fixed; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:45;
+      height:52px; background:var(--ember); color:var(--paper);
+      font-size:0.92rem; font-weight:500; letter-spacing:.02em;
+      box-shadow:0 8px 24px rgba(0,0,0,.25);
+      transform:translateY(140%); transition:transform .35s ease;
+    }
+    .wa-float.show{transform:none;}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -334,9 +382,10 @@
 </head>
 <body>
 
+<div class="nav-backdrop" id="navBackdrop"></div>
 <header id="site-header">
   <div class="brand">Herrería Martelli</div>
-  <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
+  <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="mainNav">
     <span></span><span></span><span></span>
   </button>
   <nav id="mainNav">
@@ -411,21 +460,21 @@
   <div class="gallery-grid">
     <figure>
       <div class="frame">
-        <img src="images/pergola-terraza.jpg" alt="Pérgola de hierro en terraza con plantas">
+        <img loading="lazy" src="images/pergola-terraza.jpg" alt="Pérgola de hierro en terraza con plantas">
         <div class="panes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       </div>
       <figcaption><span class="tag">Pérgola</span><span>Terraza</span></figcaption>
     </figure>
     <figure>
       <div class="frame">
-        <img src="images/pergola-urbana.jpg" alt="Pérgola de hierro con vista urbana">
+        <img loading="lazy" src="images/pergola-urbana.jpg" alt="Pérgola de hierro con vista urbana">
         <div class="panes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       </div>
       <figcaption><span class="tag">Pérgola</span><span>Vista urbana</span></figcaption>
     </figure>
     <figure>
       <div class="frame">
-        <img src="images/puerta-vidrio.jpg" alt="Puerta y mampara de hierro con vidrio repartido">
+        <img loading="lazy" src="images/puerta-vidrio.jpg" alt="Puerta y mampara de hierro con vidrio repartido">
         <div class="panes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       </div>
       <figcaption><span class="tag">Aberturas</span><span>Hierro y vidrio</span></figcaption>
@@ -456,6 +505,8 @@
   </div>
 </section>
 
+<a class="wa-float" id="waFloat" href="https://wa.me/5491100000000" target="_blank" rel="noopener">Pedir presupuesto por WhatsApp</a>
+
 <footer>
   <span>© <span id="year"></span> Herrería Martelli</span>
   <span>Hecho a mano en Buenos Aires</span>
@@ -469,13 +520,31 @@
     if(window.scrollY > 40){ header.classList.add('solid'); }
     else{ header.classList.remove('solid'); }
   };
-  window.addEventListener('scroll', onScroll);
+  window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
 
   const navToggle = document.getElementById('navToggle');
   const mainNav = document.getElementById('mainNav');
-  navToggle.addEventListener('click', () => mainNav.classList.toggle('open'));
-  mainNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mainNav.classList.remove('open')));
+  const setMenu = open => {
+    mainNav.classList.toggle('open', open);
+    document.body.classList.toggle('menu-open', open);
+    navToggle.setAttribute('aria-expanded', open);
+    navToggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+  };
+  navToggle.addEventListener('click', () => setMenu(!mainNav.classList.contains('open')));
+  document.getElementById('navBackdrop').addEventListener('click', () => setMenu(false));
+  mainNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+
+  // WhatsApp flotante: aparece después del hero y se oculta en Contacto
+  const wa = document.getElementById('waFloat');
+  const contacto = document.getElementById('contacto');
+  const updateWa = () => {
+    const pastHero = window.scrollY > window.innerHeight * 0.6;
+    const atContact = contacto.getBoundingClientRect().top < window.innerHeight * 0.8;
+    wa.classList.toggle('show', pastHero && !atContact);
+  };
+  window.addEventListener('scroll', updateWa, {passive:true});
+  updateWa();
 </script>
 
 </body>
