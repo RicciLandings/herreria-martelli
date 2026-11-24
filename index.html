@@ -457,7 +457,7 @@
     <div class="rule"></div>
     <h2>Trabajos</h2>
   </div>
-  <div class="gallery-grid">
+  <div class="gallery-grid" id="galeria">
     <figure>
       <div class="frame">
         <img loading="lazy" src="images/pergola-terraza.jpg" alt="Pérgola de hierro en terraza con plantas">
@@ -480,7 +480,6 @@
       <figcaption><span class="tag">Aberturas</span><span>Hierro y vidrio</span></figcaption>
     </figure>
   </div>
-  <p class="gallery-note">Para sumar más fotos: guardá la imagen en la carpeta <code>images/</code> y agregá un bloque <code>&lt;figure&gt;</code> nuevo como los de arriba.</p>
 </section>
 
 <section class="contact" id="contacto">
@@ -512,7 +511,33 @@
   <span>Hecho a mano en Buenos Aires</span>
 </footer>
 
+<script src="config.js"></script>
 <script>
+  // Galería: si hay base de datos configurada, carga las fotos subidas desde admin.html
+  (async () => {
+    const cfg = window.MARTELLI_CONFIG || {};
+    if (!cfg.supabaseUrl || !cfg.supabaseKey) return;
+    try {
+      const r = await fetch(cfg.supabaseUrl + '/rest/v1/trabajos?select=titulo,detalle,foto_path&order=orden.asc,created_at.desc',
+        {headers:{apikey:cfg.supabaseKey, Authorization:'Bearer ' + cfg.supabaseKey}});
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) return;
+      const panes = '<span></span>'.repeat(12);
+      const g = document.getElementById('galeria');
+      g.innerHTML = '';
+      rows.forEach(t => {
+        const f = document.createElement('figure');
+        f.innerHTML = `<div class="frame"><img loading="lazy" alt=""><div class="panes">${panes}</div></div><figcaption><span class="tag"></span><span></span></figcaption>`;
+        const img = f.querySelector('img');
+        img.src = cfg.supabaseUrl + '/storage/v1/object/public/trabajos/' + encodeURIComponent(t.foto_path);
+        img.alt = t.titulo + (t.detalle ? ' — ' + t.detalle : '');
+        const [tag, det] = f.querySelectorAll('figcaption span');
+        tag.textContent = t.titulo; det.textContent = t.detalle || '';
+        g.appendChild(f);
+      });
+    } catch (e) { /* si falla, quedan las fotos fijas */ }
+  })();
+
   document.getElementById('year').textContent = new Date().getFullYear();
 
   const header = document.getElementById('site-header');
