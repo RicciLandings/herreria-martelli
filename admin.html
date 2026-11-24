@@ -240,7 +240,9 @@ $('upForm').onsubmit = async e => {
   $('upBtn').disabled = false;
 };
 
-api.session().then(show);
+// En modo demo no hace falta login: entra directo al panel
+if (DEMO) { show(true); $('logout').classList.add('hidden'); }
+else api.session().then(show);
 </script>
 </body>
 </html>
