@@ -176,7 +176,8 @@
       </header>
       <div class="nav-backdrop" id="navBackdrop"></div>
       ${visible.map(s => SECTIONS[s.id](c)).join('')}
-      <footer><span>${T('footer_left')}</span><span>${T('footer_right')}</span></footer>
+      <footer><span>${T('footer_left')}</span><span>${T('footer_right')}</span>
+        <span class="credit">Sitio desarrollado por <a href="https://www.instagram.com/fran.n.ricci/" target="_blank" rel="noopener">Franco Ricci</a></span></footer>
       <a class="wa-float wa-link" id="waFloat" target="_blank" rel="noopener">${T('wa_float')}</a>`;
 
     // Espaciado por sección

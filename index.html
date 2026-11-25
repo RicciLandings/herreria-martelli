@@ -159,6 +159,9 @@
 
   footer{background:var(--ink); color:var(--paper); padding:30px 6vw; display:flex; justify-content:space-between; align-items:center; font-size:.78rem; flex-wrap:wrap; gap:10px;}
   footer span{opacity:.7;}
+  footer .credit{flex-basis:100%; align-self:stretch; padding-top:14px; margin-top:6px; border-top:1px solid color-mix(in srgb, var(--paper) 14%, transparent); font-size:.72rem; letter-spacing:.04em;}
+  footer .credit a{border-bottom:1px solid color-mix(in srgb, var(--paper) 40%, transparent); transition:color .5s var(--ease), border-color .5s var(--ease);}
+  footer .credit a:hover{color:var(--ember); border-color:var(--ember);}
 
   /* ---------- visor de fotos ---------- */
   body.modal-open{overflow:hidden;}
