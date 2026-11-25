@@ -197,6 +197,22 @@
     window.scrollTo(0, y);
   }
 
+  // Cambio de filtro: salen las fotos actuales y después entran las nuevas
+  let switchToken = 0;
+  function switchGallery() {
+    const g = document.getElementById('galeria');
+    const token = ++switchToken;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('#filtros .chip').forEach(c => c.classList.toggle('on', c.dataset.id === state.filter));
+    g.style.minHeight = g.offsetHeight + 'px';
+    g.querySelectorAll('.work').forEach(f => { f.classList.remove('pop'); f.classList.add('leaving'); });
+    setTimeout(() => {
+      if (token !== switchToken) return;
+      renderGallery(!reduce);
+      setTimeout(() => { if (token === switchToken) g.style.minHeight = ''; }, 1600);
+    }, reduce ? 0 : 520);
+  }
+
   function renderGallery(animate) {
     const g = document.getElementById('galeria'), fl = document.getElementById('filtros');
     if (!g) return;
@@ -206,10 +222,15 @@
     fl.innerHTML = '';
     const chip = (id, label) => {
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'chip' + (state.filter === id ? ' on' : '');
+      b.type = 'button'; b.className = 'chip' + (state.filter === id ? ' on' : ''); b.dataset.id = id;
       b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', state.filter === id);
       if (id === 'all') b.innerHTML = T('filter_all'); else b.textContent = label;
-      b.onclick = e => { if (edit && e.target.closest('[data-k]')) return; state.filter = id; renderGallery(true); };
+      b.onclick = e => {
+        if (edit && e.target.closest('[data-k]')) return;
+        if (state.filter === id) return;
+        state.filter = id;
+        switchGallery();
+      };
       fl.appendChild(b);
     };
     chip('all');
@@ -224,7 +245,7 @@
     list.forEach((it, i) => {
       const f = document.createElement('figure');
       f.className = 'work' + (animate ? ' pop' : '');
-      if (animate) f.style.animationDelay = Math.min(i, 12) * 80 + 'ms';
+      if (animate) f.style.animationDelay = Math.min(i, 10) * 130 + 'ms';
       f.tabIndex = 0;
       f.innerHTML = `<div class="frame"><img loading="lazy" alt=""><div class="panes">${panes}</div></div><figcaption><span class="tag"></span></figcaption>`;
       const img = f.querySelector('img');
