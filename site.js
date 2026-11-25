@@ -2,7 +2,7 @@
 // La usa index.html (web pública) y el panel (vista previa con ?edit=1).
 (function () {
   const DEFAULT = {
-    theme: { bg: '#ece6da', bgAlt: '#dfd7c6', text: '#15140f', muted: '#6f6a5c', accent: '#a8512b', dark: '#2b2a26',
+    theme: { bg: '#efe9de', bgAlt: '#e2d9c8', text: '#0e0d0a', muted: '#57524a', accent: '#a5461f', dark: '#1c1b17',
              font: 'Archivo', baseSize: 16, headingWeight: 600 },
     sections: [
       { id: 'hero', visible: true, space: 1 },
@@ -10,7 +10,7 @@
       { id: 'sobre', visible: true, space: 1 },
       { id: 'contacto', visible: true, space: 1 },
     ],
-    hero: { image: 'images/pergola-urbana.jpg', focus: 'center', height: 100 },
+    hero: { images: ['images/pergola-urbana.jpg', 'images/pergola-terraza.jpg'], focus: 'center', height: 100, interval: 7 },
     intro: { enabled: true },
     gallery: { layout: 'grid', columns: 3, ratio: '4/5', gap: 1 },
     contact: { whatsapp: '5491148891662', message: 'Hola! Quisiera un presupuesto para un trabajo de herrería.' },
@@ -63,6 +63,10 @@
     const c = clone(DEFAULT);
     if (!saved) return c;
     for (const k of ['theme', 'hero', 'intro', 'gallery', 'contact', 'texts', 'styles']) Object.assign(c[k], saved[k] || {});
+    // compatibilidad: antes la portada tenía una sola foto
+    if (saved.hero && saved.hero.image && !(saved.hero.images && saved.hero.images.length)) c.hero.images = [saved.hero.image];
+    delete c.hero.image;
+    if (!c.hero.images.length) c.hero.images = clone(DEFAULT.hero.images);
     if (Array.isArray(saved.sections)) {
       const ids = saved.sections.map(s => s.id).filter(id => SECTION_NAMES[id]);
       c.sections = saved.sections.filter(s => SECTION_NAMES[s.id]).map(s => ({ ...DEFAULT.sections.find(d => d.id === s.id), ...s }))
@@ -89,13 +93,13 @@
 
   const waUrl = c => 'https://wa.me/' + c.contact.whatsapp.replace(/\D/g, '') + '?text=' + encodeURIComponent(c.contact.message);
   const T = k => `<span data-k="${k}"></span>`;
-  const panes = '<span></span>'.repeat(12);
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
   // ---------- secciones ----------
   const SECTIONS = {
     hero: c => `
       <section class="hero" id="inicio" data-sec="hero">
-        <img class="hero-img" data-img="hero" alt="">
+        <div class="hero-media" data-img="hero"></div>
         <div class="hero-content">
           <div class="eyebrow"><span class="grid-mark"><span></span><span></span><span></span><span></span></span>${T('hero_eyebrow')}</div>
           <h1>${T('hero_title')}</h1>
@@ -188,9 +192,8 @@
     const mail = document.querySelector('.mail-link'); if (mail) mail.href = 'mailto:' + (c.texts.val_mail || '').trim();
     const ig = document.querySelector('.ig-link'); if (ig) ig.href = 'https://instagram.com/' + (c.texts.val_ig || '').replace(/^@/, '').trim();
 
-    // Portada
-    const hi = document.querySelector('.hero-img');
-    if (hi) { hi.src = Store.url(c.hero.image); hi.style.objectPosition = FOCUS[c.hero.focus] || FOCUS.center; }
+    // Portada (una o varias fotos que cambian solas)
+    renderHero();
 
     // Trabajos con filtros por rubro
     renderGallery();
@@ -219,6 +222,7 @@
   function renderGallery(animate) {
     const g = document.getElementById('galeria'), fl = document.getElementById('filtros');
     if (!g) return;
+    stopCards();
     const cats = state.cats.filter(c => c.fotos.length);
     if (state.filter !== 'all' && !cats.some(c => c.id === state.filter)) state.filter = 'all';
     // botones de rubro
@@ -241,51 +245,174 @@
     fl.querySelectorAll('[data-k]').forEach(fillText);
     if (edit) fl.querySelectorAll('[data-k]').forEach(makeEditable);
     fl.hidden = cats.length < 2;
-    // fotos
+    // trabajos: cada foto principal con sus detalles
     const list = [];
-    cats.forEach(c => { if (state.filter === 'all' || state.filter === c.id) c.fotos.forEach(f => list.push({ path: f.path, nombre: c.nombre, encuadre: c.encuadre })); });
+    cats.forEach(c => { if (state.filter === 'all' || state.filter === c.id) c.fotos.forEach(f =>
+      list.push({ nombre: c.nombre, encuadre: c.encuadre, imgs: [f.path].concat((f.detalles || []).map(d => d.path)) })); });
     g.innerHTML = '';
     list.forEach((it, i) => {
       const f = document.createElement('figure');
       f.className = 'work' + (animate ? ' pop' : '');
       if (animate) f.style.animationDelay = Math.min(i, 10) * 90 + 'ms';
-      f.tabIndex = 0;
-      f.innerHTML = `<div class="frame"><img loading="lazy" alt=""><div class="panes">${panes}</div></div><figcaption><span class="tag"></span></figcaption>`;
-      const img = f.querySelector('img');
-      img.onload = () => img.classList.add('ld');
-      img.src = Store.url(it.path); img.alt = it.nombre;
-      if (img.complete) img.classList.add('ld');
-      img.style.objectPosition = FOCUS[it.encuadre] || FOCUS.center;
+      const multi = it.imgs.length > 1;
+      f.innerHTML = `<button type="button" class="frame" aria-label="Ver ${esc(it.nombre)} en grande"><div class="slides"></div>
+          ${multi ? '<span class="frame-count"></span>' : ''}</button>
+        <figcaption><span class="tag"></span>${multi ? '<div class="thumbs" role="tablist"></div>' : ''}</figcaption>`;
+      const track = f.querySelector('.slides');
+      it.imgs.forEach((path, j) => {
+        const img = document.createElement('img');
+        img.alt = it.nombre + (j ? ' — detalle ' + j : '');
+        img.loading = 'lazy';
+        img.style.objectPosition = FOCUS[it.encuadre] || FOCUS.center;
+        img.onload = () => img.classList.add('ld');
+        img.src = Store.url(path);
+        if (img.complete) img.classList.add('ld');
+        track.appendChild(img);
+      });
       f.querySelector('.tag').textContent = it.nombre;
-      const open = () => openLightbox(list, i);
-      f.onclick = open;
-      f.onkeydown = e => { if (e.key === 'Enter') open(); };
+      const card = { el: f, n: it.imgs.length, i: 0, timer: null, user: false };
+      if (multi) {
+        const th = f.querySelector('.thumbs');
+        it.imgs.forEach((path, j) => {
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'thumb' + (j ? '' : ' on');
+          b.setAttribute('aria-label', j ? 'Detalle ' + j : 'Foto principal');
+          b.innerHTML = '<img alt="" loading="lazy">';
+          b.querySelector('img').src = Store.url(path);
+          b.onclick = () => { card.user = true; stopCard(card); goCard(card, j); };
+          th.appendChild(b);
+        });
+        cards.push(card);
+        cardObserver().observe(f);
+      }
+      goCard(card, 0, true);
+      f.querySelector('.frame').onclick = () => openLightbox(it.imgs.map(p => ({ path: p, nombre: it.nombre })), card.i);
       g.appendChild(f);
     });
     if (!list.length) g.innerHTML = '<p class="gallery-empty">Pronto vas a ver acá nuestros trabajos.</p>';
+    if (!animate && !edit) revealWorks();
   }
 
-  // Animación suave de entrada de textos (espera a que se cierre la pantalla de inicio)
+  // ---------- tarjetas con detalles: miniaturas y paneo automático ----------
+  let cards = [], cardIO = null;
+  function goCard(card, j, instant) {
+    card.i = j;
+    const track = card.el.querySelector('.slides');
+    if (instant) track.style.transition = 'none';
+    track.style.transform = `translate3d(${-j * 100}%, 0, 0)`;
+    if (instant) { track.offsetWidth; track.style.transition = ''; }
+    card.el.querySelectorAll('.thumb').forEach((t, k) => t.classList.toggle('on', k === j));
+    const cnt = card.el.querySelector('.frame-count');
+    if (cnt) cnt.textContent = (j + 1) + ' / ' + card.n;
+  }
+  function startCard(card) {
+    if (card.user || card.timer || edit || reduceMotion()) return;
+    // primero se ve la foto principal un rato, después pasan los detalles
+    const step = () => { goCard(card, (card.i + 1) % card.n); card.timer = setTimeout(step, 3800); };
+    card.timer = setTimeout(step, 3200);
+  }
+  function stopCard(card) { clearTimeout(card.timer); card.timer = null; }
+  function stopCards() { cards.forEach(stopCard); cards = []; if (cardIO) cardIO.disconnect(); }
+  function cardObserver() {
+    if (cardIO) return cardIO;
+    cardIO = new IntersectionObserver(entries => entries.forEach(e => {
+      const card = cards.find(c => c.el === e.target);
+      if (!card) return;
+      if (e.isIntersecting && !introOpen) startCard(card); else stopCard(card);
+    }), { threshold: 0.6 });
+    return cardIO;
+  }
+
+  // ---------- portada con varias fotos ----------
+  let heroTimer = null;
+  function renderHero() {
+    const box = document.querySelector('.hero-media');
+    clearInterval(heroTimer);
+    if (!box) return;
+    const c = state.cfg.hero;
+    box.innerHTML = '';
+    c.images.forEach((path, i) => {
+      const img = document.createElement('img');
+      img.className = 'hero-img' + (i === 0 ? ' on' : '');
+      img.alt = i === 0 ? 'Trabajo de Herrería Martelli' : '';
+      img.style.objectPosition = FOCUS[c.focus] || FOCUS.center;
+      if (i > 0) img.loading = 'lazy';
+      img.src = Store.url(path);
+      box.appendChild(img);
+    });
+    if (c.images.length < 2 || edit || reduceMotion()) return;
+    let i = 0;
+    heroTimer = setInterval(() => {
+      const imgs = box.querySelectorAll('.hero-img');
+      if (!imgs.length) return clearInterval(heroTimer);
+      imgs[i].classList.remove('on'); imgs[i].classList.add('off');
+      const prev = imgs[i];
+      setTimeout(() => prev.classList.remove('off'), 2600);
+      i = (i + 1) % imgs.length;
+      imgs[i].classList.add('on');
+    }, Math.max(4, c.interval) * 1000);
+  }
+
+  // ---------- animaciones de entrada ----------
+  // Títulos: cada palabra sube desde detrás de una máscara (como en webs editoriales).
+  // Textos: aparecen con un fundido corto. Fotos: se descubren de abajo hacia arriba.
   let io = null, introOpen = false;
   const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function splitWords(el) {
+    if (el.dataset.split) return;
+    el.dataset.split = '1';
+    let n = 0;
+    el.querySelectorAll('[data-k]').forEach(span => {
+      const parts = span.textContent.split(/(\s+)/);
+      span.textContent = '';
+      parts.forEach(p => {
+        if (!p) return;
+        if (/^\s+$/.test(p)) {
+          if (p.includes('\n')) span.appendChild(document.createElement('br'));
+          else span.appendChild(document.createTextNode(' '));
+          return;
+        }
+        const w = document.createElement('span'); w.className = 'w';
+        const wi = document.createElement('span'); wi.className = 'wi'; wi.textContent = p;
+        wi.style.setProperty('--wi', n++);
+        w.appendChild(wi); span.appendChild(w);
+      });
+    });
+  }
   function reveal() {
     if (reduceMotion()) return;
     if (io) io.disconnect();
-    const groups = [['.hero-content > *', 0.15, 0.16], ['.gallery .section-head, .services-line, .filters, .gallery-note', 0, 0.1],
-      ['.about .section-head, .about-zone, .about-text p', 0, 0.1], ['.contact .section-head, .contact .lead, .contact .cta, .contact-list li', 0, 0.08]];
+    document.querySelectorAll('.hero h1, .section-head h2, .about-zone').forEach(splitWords);
+    const groups = [
+      ['.hero-content .eyebrow, .hero h1, .hero p, .hero .cta', 0.1, [0, 0.12, 0.75, 0.95]],
+      ['.gallery .section-head, .services-line, .filters, .gallery-note', 0, 0.12],
+      ['.about .section-head, .about-zone, .about-text p', 0, 0.14],
+      ['.contact .section-head, .contact .lead, .contact .cta, .contact-list li', 0, 0.08],
+    ];
     groups.forEach(([sel, base, step]) => document.querySelectorAll(sel).forEach((el, i) => {
       el.classList.add('reveal');
-      el.style.setProperty('--d', (base + i * step).toFixed(2) + 's');
+      if (el.querySelector('.w')) el.classList.add('words');
+      const d = Array.isArray(step) ? base + (step[i] || 0) : base + i * step;
+      el.style.setProperty('--d', d.toFixed(2) + 's');
     }));
     if (!introOpen) observe();
+  }
+  function revealWorks() {
+    if (reduceMotion()) return;
+    document.querySelectorAll('.work:not(.pop)').forEach((el, i) => {
+      el.classList.add('reveal', 'img-reveal');
+      el.style.setProperty('--d', ((i % 3) * 0.12).toFixed(2) + 's');
+      if (io && !introOpen) io.observe(el);
+    });
   }
   function observe() {
     if (reduceMotion()) return;
     document.documentElement.classList.add('ready');
     io = new IntersectionObserver(entries => entries.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-    }), { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    }), { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
     document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
+    cards.forEach(c => { const r = c.el.getBoundingClientRect(); if (r.top < innerHeight && r.bottom > 0) startCard(c); });
   }
 
   // ---------- pantalla de inicio ----------
@@ -347,22 +474,28 @@
     document.getElementById('navBackdrop').onclick = () => setMenu(false);
     nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
     onScroll();
-    header.classList.toggle('solid', window.scrollY > 40);
   }
 
   let ticking = false;
   function parallax() {
     ticking = false;
     if (edit || reduceMotion()) return;
-    const hc = document.querySelector('.hero-content'), h = window.innerHeight, y = window.scrollY;
-    if (!hc || y > h) return;
-    hc.style.transform = `translate3d(0, ${(y * 0.18).toFixed(1)}px, 0)`;
-    hc.style.opacity = Math.max(0, 1 - y / (h * 0.75)).toFixed(3);
+    const hero = document.querySelector('.hero');
+    if (!hero) return;
+    const h = hero.offsetHeight, y = Math.min(window.scrollY, h), p = y / h;
+    const hc = hero.querySelector('.hero-content'), media = hero.querySelector('.hero-media');
+    // el texto sube apenas y se desvanece antes de que llegue el menú; la foto se oscurece y se aleja
+    hc.style.transform = `translate3d(0, ${(-y * 0.12).toFixed(1)}px, 0)`;
+    hc.style.opacity = Math.max(0, 1 - p * 1.9).toFixed(3);
+    media.style.transform = `scale(${(1 + p * 0.06).toFixed(4)})`;
+    hero.style.setProperty('--shade', (p * 0.7).toFixed(3));
   }
   function onScroll() {
     if (!ticking) { ticking = true; requestAnimationFrame(parallax); }
     const header = document.getElementById('site-header');
-    if (header) header.classList.toggle('solid', window.scrollY > 40);
+    const hero = document.querySelector('.hero');
+    const limit = hero ? hero.offsetHeight - 70 : 40;
+    if (header) header.classList.toggle('solid', window.scrollY > limit);
     const wa = document.getElementById('waFloat');
     const contacto = document.getElementById('contacto');
     if (wa) {
@@ -433,8 +566,8 @@
       if (a.getAttribute('href') && a.getAttribute('href').startsWith('#') && !e.target.closest('[data-k]')) return;
       e.preventDefault();
     }));
-    const hi = document.querySelector('.hero-img');
-    if (hi) hi.addEventListener('click', () => edit.onImage('hero'));
+    const hm = document.querySelector('.hero-media');
+    if (hm) hm.addEventListener('click', () => edit.onImage('hero'));
   }
 
   function makeEditable(el) {

@@ -34,11 +34,13 @@ create table if not exists public.categorias (
 create table if not exists public.fotos (
   id uuid primary key default gen_random_uuid(),
   categoria_id uuid not null references public.categorias(id) on delete cascade,
+  parent_id uuid references public.fotos(id) on delete cascade, -- si tiene valor, es un detalle de esa foto
   path text not null,
   orden int not null default 0,
   created_at timestamptz not null default now()
 );
 create index if not exists fotos_categoria_idx on public.fotos(categoria_id);
+create index if not exists fotos_parent_idx on public.fotos(parent_id);
 alter table public.categorias enable row level security;
 alter table public.fotos enable row level security;
 

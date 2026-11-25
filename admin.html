@@ -84,6 +84,11 @@
   .ph-item .bar button{flex:1;border:0;background:none;color:#fff;padding:5px 0;cursor:pointer;font-size:.8rem}
   .ph-item .bar button:disabled{opacity:.3}
   .ph-item .star{position:absolute;top:4px;left:4px;background:var(--ember);color:#fff;font-size:.68rem;padding:2px 6px}
+  .ph-item .det{position:absolute;top:4px;left:4px;right:4px;border:0;background:rgba(255,255,255,.92);color:var(--ink);font-size:.7rem;padding:4px 6px;cursor:pointer;text-align:left}
+  .ph-item .det.on{background:var(--ember);color:#fff}
+  .det-box{margin-top:10px;padding:10px;border:1px dashed var(--ember);background:#fffaf5}
+  .det-box b{display:block;margin-bottom:2px}
+  .det-box .hint{margin-bottom:6px}
   .file-btn{display:block;text-align:center;border:1.5px dashed var(--grey);padding:12px;cursor:pointer;color:var(--grey);margin-top:8px;background:#fff}
   .file-btn input{display:none}
   .thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:#ddd;margin-bottom:8px}
@@ -146,7 +151,7 @@
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let W, Site, published, draft, cats = [], tab = 'textos', selKey = null, openCat = null;
+let W, Site, published, draft, cats = [], tab = 'textos', selKey = null, openCat = null, openFoto = null;
 
 function toast(text, err) {
   const t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = text;
@@ -297,7 +302,7 @@ function paneTextos(p) {
 }
 
 function paneTrabajos(p) {
-  p.appendChild(h('Categorías de trabajos', 'Cada categoría es un botón de filtro en la web (además de "Todos"). Las fotos se muestran en el orden de acá. Estos cambios se guardan al instante.'));
+  p.appendChild(h('Categorías de trabajos', 'Cada categoría es un botón de filtro en la web (además de "Todos"). Cada foto puede tener fotos de detalle: se ven como miniaturas debajo y pasan solas. Estos cambios se guardan al instante.'));
   cats.forEach((cat, i) => {
     const el = document.createElement('div'); el.className = 'cat';
     const cover = cat.portada || (cat.fotos[0] && cat.fotos[0].path);
@@ -325,9 +330,11 @@ function paneTrabajos(p) {
       const grid = document.createElement('div'); grid.className = 'photos';
       cat.fotos.forEach((f, j) => {
         const it = document.createElement('div'); it.className = 'ph-item';
-        it.innerHTML = `<img alt=""><div class="bar">
+        const nd = (f.detalles || []).length;
+        it.innerHTML = `<img alt=""><button class="det ${openFoto === f.id ? 'on' : ''}" title="Fotos de detalle">+ Detalles${nd ? ' (' + nd + ')' : ''}</button><div class="bar">
           <button title="Mover antes">←</button><button title="Mover después">→</button><button title="Borrar">✕</button></div>`;
         it.querySelector('img').src = Store.url(f.path);
+        it.querySelector('.det').onclick = () => { openFoto = openFoto === f.id ? null : f.id; renderPane(); };
         const [l, r, x] = it.querySelectorAll('.bar button');
         l.disabled = j === 0; r.disabled = j === cat.fotos.length - 1;
         const mv = async d => {
@@ -336,12 +343,41 @@ function paneTrabajos(p) {
         };
         l.onclick = () => mv(-1); r.onclick = () => mv(1);
         x.onclick = async () => {
-          if (!confirm('¿Borrar esta foto?')) return;
+          if (!confirm(nd ? `¿Borrar esta foto y sus ${nd} detalles?` : '¿Borrar esta foto?')) return;
           try { if (cat.portada === f.path) await Store.updateCategoria(cat.id, { portada: null }); await Store.deleteFoto(cat.id, f); reloadCats(); } catch (e) { fail(e); }
         };
         grid.appendChild(it);
       });
       body.appendChild(grid);
+      // detalles de la foto elegida
+      const fo = cat.fotos.find(x => x.id === openFoto);
+      if (fo) {
+        const dbox = document.createElement('div'); dbox.className = 'det-box';
+        dbox.innerHTML = '<b>Detalles de esta foto</b><p class="hint">Se muestran después de la foto principal, en este orden.</p>';
+        const dg = document.createElement('div'); dg.className = 'photos';
+        const dets = fo.detalles || [];
+        dets.forEach((d, j) => {
+          const it = document.createElement('div'); it.className = 'ph-item';
+          it.innerHTML = `<img alt=""><div class="bar"><button title="Mover antes">←</button><button title="Mover después">→</button><button title="Borrar">✕</button></div>`;
+          it.querySelector('img').src = Store.url(d.path);
+          const [l, r, x] = it.querySelectorAll('.bar button');
+          l.disabled = j === 0; r.disabled = j === dets.length - 1;
+          const mv = async dd => {
+            try { const o = dets.slice(); [o[j], o[j + dd]] = [o[j + dd], o[j]];
+              await Promise.all(o.map((q, k) => Store.updateFoto(cat.id, q.id, { orden: k }, fo.id))); reloadCats(); } catch (e) { fail(e); }
+          };
+          l.onclick = () => mv(-1); r.onclick = () => mv(1);
+          x.onclick = async () => { if (!confirm('¿Borrar este detalle?')) return; try { await Store.deleteFoto(cat.id, d, fo.id); reloadCats(); } catch (e) { fail(e); } };
+          dg.appendChild(it);
+        });
+        dbox.appendChild(dg);
+        dbox.appendChild(fileBtn('+ Agregar detalles', true, async files => {
+          toast('Subiendo…');
+          try { let n = dets.length; for (const f of files) await Store.addFoto(cat.id, await shrink(f), n++, fo.id); toast('Detalles agregados'); reloadCats(); }
+          catch (e) { fail(e); reloadCats(); }
+        }));
+        body.appendChild(dbox);
+      }
       body.appendChild(fileBtn('+ Agregar fotos', true, async files => {
         toast('Subiendo ' + files.length + (files.length > 1 ? ' fotos…' : ' foto…'));
         try { let n = cat.fotos.length; for (const f of files) await Store.addFoto(cat.id, await shrink(f), n++); toast('Fotos agregadas'); reloadCats(); }
@@ -367,13 +403,26 @@ function paneTrabajos(p) {
 }
 
 function paneImagenes(p) {
-  p.appendChild(h('Foto de portada'));
-  const th = document.createElement('img'); th.className = 'thumb'; th.src = Store.url(draft.hero.image); th.alt = '';
-  p.appendChild(th);
-  p.appendChild(fileBtn('Cambiar foto de portada', false, async ([f]) => {
-    try { toast('Subiendo foto…'); draft.hero.image = await Store.uploadImage(await shrink(f, 2000)); update(); renderPane(); toast('Foto cambiada. Tocá Publicar para guardarla.'); }
+  p.appendChild(h('Fotos de portada', 'Si hay más de una, van cambiando solas con un fundido suave. La primera es la que se ve al entrar.'));
+  const imgs = draft.hero.images;
+  const hg = document.createElement('div'); hg.className = 'photos';
+  imgs.forEach((path, j) => {
+    const it = document.createElement('div'); it.className = 'ph-item'; it.style.aspectRatio = '16/10';
+    it.innerHTML = `<img alt=""><div class="bar"><button title="Mover antes">←</button><button title="Mover después">→</button><button title="Quitar">✕</button></div>`;
+    it.querySelector('img').src = Store.url(path);
+    const [l, r, x] = it.querySelectorAll('.bar button');
+    l.disabled = j === 0; r.disabled = j === imgs.length - 1; x.disabled = imgs.length === 1;
+    const mv = d => { [imgs[j], imgs[j + d]] = [imgs[j + d], imgs[j]]; update(); renderPane(); };
+    l.onclick = () => mv(-1); r.onclick = () => mv(1);
+    x.onclick = () => { imgs.splice(j, 1); update(); renderPane(); };
+    hg.appendChild(it);
+  });
+  p.appendChild(hg);
+  p.appendChild(fileBtn('+ Agregar fotos de portada', true, async files => {
+    try { toast('Subiendo…'); for (const f of files) imgs.push(await Store.uploadImage(await shrink(f, 2000))); update(); renderPane(); toast('Listo. Tocá Publicar para guardarlas.'); }
     catch (e) { fail(e); }
   }));
+  p.appendChild(slider('Cambia cada', draft.hero.interval, 4, 15, 1, v => { draft.hero.interval = v; update(); }, v => v + ' s'));
   p.appendChild(select('Encuadre', draft.hero.focus, FOCUS_OPTS, v => { draft.hero.focus = v; update(); }));
   p.appendChild(slider('Alto', draft.hero.height, 50, 100, 5, v => { draft.hero.height = v; update(); }, v => v + '%'));
 
