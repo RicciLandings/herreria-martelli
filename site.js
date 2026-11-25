@@ -308,10 +308,10 @@
   function startCard(card) {
     if (card.user || card.timer || edit || reduceMotion()) return;
     // primero se ve la foto principal un rato, después pasan los detalles
-    const DUR = 3400;
+    const DUR = 2600;
     const step = () => { goCard(card, (card.i + 1) % card.n); progress(card, DUR); card.timer = setTimeout(step, DUR); };
-    progress(card, 2200);
-    card.timer = setTimeout(step, 2200);
+    progress(card, 1000);
+    card.timer = setTimeout(step, 1000);
   }
   // barra que se llena en la miniatura activa: muestra que la foto va a cambiar sola
   function progress(card, ms) {
