@@ -267,9 +267,10 @@
         img.onload = () => img.classList.add('ld');
         img.src = Store.url(path);
         if (img.complete) img.classList.add('ld');
-        track.appendChild(img);
+        const slide = document.createElement('div'); slide.className = 'slide'; // recorta el zoom de cada foto
+        slide.appendChild(img); track.appendChild(slide);
       });
-      if (multi) { const loop = track.firstChild.cloneNode(); loop.alt = ''; loop.setAttribute('aria-hidden', 'true'); loop.classList.add('ld'); track.appendChild(loop); }
+      if (multi) { const loop = track.firstChild.cloneNode(true); loop.setAttribute('aria-hidden', 'true'); loop.querySelector('img').alt = ''; loop.querySelector('img').classList.add('ld'); track.appendChild(loop); }
       f.querySelector('.tag').textContent = it.nombre;
       const card = { el: f, n: it.imgs.length, i: 0, timer: null, user: false };
       if (multi) {
