@@ -7,242 +7,447 @@
 <title>Panel · Herrería Martelli</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--ink:#15140f;--paper:#ece6da;--deep:#dfd7c6;--steel:#2b2a26;--ember:#a8512b;--grey:#6f6a5c;--line:rgba(21,20,15,.14);--ok:#3d7a4f;--err:#a33}
+  :root{--ink:#15140f;--paper:#ece6da;--card:#f6f2ea;--steel:#2b2a26;--ember:#a8512b;--grey:#6f6a5c;--line:rgba(21,20,15,.14);--ok:#3d7a4f;--err:#a33}
   *{box-sizing:border-box;margin:0}
-  body{background:var(--paper);color:var(--ink);font-family:'Work Sans',sans-serif;-webkit-font-smoothing:antialiased;min-height:100svh}
-  h1,h2{font-family:'Fraunces',serif;font-weight:600}
-  button,input{font:inherit}
-  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
-  header{background:var(--steel);color:var(--paper)}
-  header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
-  header h1{font-size:1.1rem}
-  header a,header button{color:var(--paper);background:none;border:1px solid rgba(236,230,218,.3);padding:7px 12px;font-size:.8rem;cursor:pointer;text-decoration:none}
-  .demo{background:var(--ember);color:var(--paper);font-size:.82rem;padding:10px 20px;text-align:center}
-  main{padding:28px 0 60px}
-  .card{background:#f6f2ea;border:1px solid var(--line);padding:22px;margin-bottom:22px}
-  .card h2{font-size:1.25rem;margin-bottom:16px}
-  label{display:block;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--grey);margin:14px 0 6px}
-  input[type=text],input[type=email],input[type=password]{width:100%;padding:13px 14px;border:1px solid var(--line);background:#fff;font-size:16px}
-  .btn{display:block;width:100%;margin-top:20px;height:50px;border:0;background:var(--ink);color:var(--paper);font-weight:500;cursor:pointer}
-  .btn:disabled{opacity:.5}
-  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed var(--grey);min-height:150px;padding:16px;cursor:pointer;text-align:center;color:var(--grey);background:#fff;position:relative;overflow:hidden}
-  .drop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .drop input{display:none}
-  .drop strong{color:var(--ink)}
-  .msg{margin-top:12px;font-size:.88rem;min-height:1.2em}
-  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
-  .list{display:grid;gap:10px}
-  .item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);padding:8px}
-  .item img{width:72px;height:90px;object-fit:cover;flex:none;background:var(--deep)}
-  .item .txt{flex:1;min-width:0}
-  .item .txt b{display:block;font-weight:600}
-  .item .txt span{color:var(--grey);font-size:.88rem}
-  .item .acts{display:flex;flex-direction:column;gap:4px}
-  .item .acts button{width:40px;height:30px;border:1px solid var(--line);background:var(--paper);cursor:pointer;font-size:.9rem}
-  .item .acts button.del{color:var(--err)}
-  .empty{color:var(--grey);font-size:.92rem}
+  html,body{height:100%}
+  body{background:var(--paper);color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased;font-size:14px}
+  button,input,select,textarea{font:inherit;color:inherit}
   .hidden{display:none!important}
+
+  /* barra superior */
+  .top{height:56px;background:var(--steel);color:var(--paper);display:flex;align-items:center;gap:8px;padding:0 12px}
+  .top h1{font-size:1rem;font-weight:700;margin-right:auto;white-space:nowrap}
+  .top button,.top a{background:none;border:1px solid rgba(236,230,218,.3);color:var(--paper);padding:7px 11px;cursor:pointer;text-decoration:none;font-size:.82rem;white-space:nowrap}
+  .top .pub{background:var(--ember);border-color:var(--ember);font-weight:600}
+  .top .pub:disabled{opacity:.45;cursor:default}
+  .dev{display:flex}
+  .dev button.on{background:rgba(236,230,218,.18)}
+  .demo{background:var(--ember);color:var(--paper);font-size:.8rem;padding:7px 12px;text-align:center}
+  .demo button{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer}
+
+  /* layout */
+  .editor{display:grid;grid-template-columns:380px 1fr;height:calc(100% - 56px)}
+  .editor.with-demo{height:calc(100% - 56px - 31px)}
+  .side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--card)}
+  .tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;flex:none}
+  .tabs button{flex:1;border:0;background:none;padding:13px 8px;cursor:pointer;color:var(--grey);border-bottom:2px solid transparent;white-space:nowrap;font-weight:500}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ember)}
+  .pane{overflow-y:auto;padding:16px;flex:1}
+  .preview{display:flex;justify-content:center;background:#cfc8b9;min-height:0;overflow:hidden}
+  .preview iframe{border:0;width:100%;height:100%;background:#fff;transition:width .3s}
+  .preview.mobile iframe{width:390px;max-width:100%;box-shadow:0 0 0 1px var(--line),0 10px 40px rgba(0,0,0,.2)}
+
+  /* controles */
+  h3{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);margin:18px 0 8px;font-weight:600}
+  h3:first-child{margin-top:0}
+  .hint{color:var(--grey);font-size:.8rem;margin-bottom:12px;line-height:1.45}
+  .row{display:flex;align-items:center;gap:8px;margin:8px 0}
+  .row label{flex:1;color:var(--steel)}
+  .row input[type=range]{flex:1.3}
+  .row output{width:44px;text-align:right;color:var(--grey);font-size:.8rem}
+  input[type=text],select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);background:#fff;font-size:16px}
+  textarea{min-height:70px;resize:vertical;line-height:1.4}
+  input[type=color]{width:44px;height:32px;border:1px solid var(--line);padding:2px;background:#fff;cursor:pointer}
+  .btn{border:1px solid var(--line);background:#fff;padding:8px 12px;cursor:pointer}
+  .btn.dark{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .btn.full{width:100%;margin-top:8px;padding:11px}
+  .seg{display:flex;border:1px solid var(--line);background:#fff}
+  .seg button{flex:1;border:0;background:none;padding:8px 6px;cursor:pointer}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .ibtn{width:32px;height:30px;border:1px solid var(--line);background:#fff;cursor:pointer;flex:none}
+  .ibtn:disabled{opacity:.35}
+  .ibtn.del{color:var(--err)}
+
+  .tlist button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:9px 4px;cursor:pointer}
+  .tlist button small{display:block;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tlist button.on{background:#fff;box-shadow:inset 3px 0 var(--ember)}
+  .tedit{background:#fff;border:1px solid var(--line);padding:12px;margin-bottom:12px;position:sticky;top:-16px;z-index:2}
+  .tedit b{display:block;margin-bottom:8px}
+
+  .sec{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);padding:8px;margin-bottom:6px}
+  .sec .name{flex:1;font-weight:600}
+  .sec .sp{display:flex;align-items:center;gap:6px;width:100%;margin-top:6px;color:var(--grey);font-size:.8rem}
+  .sec-wrap{background:#fff;border:1px solid var(--line);padding:8px 10px;margin-bottom:8px}
+  .sec-wrap .sec{border:0;padding:0;margin:0}
+
+  .cat{background:#fff;border:1px solid var(--line);margin-bottom:10px}
+  .cat-h{display:flex;gap:8px;align-items:center;padding:8px}
+  .cat-h img,.cat-h .ph{width:52px;height:64px;object-fit:cover;flex:none;background:#ddd}
+  .cat-h input{flex:1;min-width:0}
+  .cat-b{border-top:1px solid var(--line);padding:10px}
+  .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+  .ph-item{position:relative;aspect-ratio:4/5;background:#ddd}
+  .ph-item img{width:100%;height:100%;object-fit:cover}
+  .ph-item .bar{position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(0,0,0,.6)}
+  .ph-item .bar button{flex:1;border:0;background:none;color:#fff;padding:5px 0;cursor:pointer;font-size:.8rem}
+  .ph-item .bar button:disabled{opacity:.3}
+  .ph-item .star{position:absolute;top:4px;left:4px;background:var(--ember);color:#fff;font-size:.68rem;padding:2px 6px}
+  .file-btn{display:block;text-align:center;border:1.5px dashed var(--grey);padding:12px;cursor:pointer;color:var(--grey);margin-top:8px;background:#fff}
+  .file-btn input{display:none}
+  .thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:#ddd;margin-bottom:8px}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;z-index:9;font-size:.9rem;max-width:90vw}
+  .toast.err{background:var(--err)}
+
+  /* login */
+  .login{max-width:380px;margin:60px auto;padding:24px;background:var(--card);border:1px solid var(--line)}
+  .login h2{font-size:1.3rem;margin-bottom:16px}
+  .login label{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--grey);margin:12px 0 6px}
+  .login input{width:100%;padding:12px;border:1px solid var(--line);font-size:16px}
+  .login .msg{margin-top:10px;color:var(--err);min-height:1.2em}
+
+  @media (max-width:900px){
+    .editor{grid-template-columns:1fr;grid-template-rows:52% 48%}
+    .preview{order:-1}
+    .side{border-right:0;border-top:1px solid var(--line)}
+    .dev{display:none}
+    .top h1 span{display:none}
+  }
 </style>
 </head>
 <body>
 
-<header><div class="wrap">
-  <h1>Panel del taller</h1>
-  <div>
-    <a href="index.html" target="_blank">Ver web</a>
-    <button id="logout" class="hidden">Salir</button>
-  </div>
-</div></header>
-<div class="demo hidden" id="demoBar">Modo demo: todavía no está conectada la base de datos. Lo que subas acá no se guarda.</div>
+<div class="top">
+  <h1>Panel <span>· Herrería Martelli</span></h1>
+  <div class="dev" id="dev"><button data-d="mobile" class="on" title="Vista celular">Celular</button><button data-d="desktop" title="Vista compu">Compu</button></div>
+  <a href="index.html" target="_blank">Ver web</a>
+  <button id="discard" disabled>Descartar</button>
+  <button id="publish" class="pub" disabled>Publicar</button>
+  <button id="logout" class="hidden">Salir</button>
+</div>
+<div class="demo hidden" id="demoBar">Modo demo: los cambios se guardan solo en este navegador. <button id="resetDemo">Reiniciar demo</button></div>
 
-<main class="wrap">
-  <!-- Login -->
-  <section class="card" id="loginView">
-    <h2>Ingresar</h2>
-    <form id="loginForm">
-      <label for="email">Email</label>
-      <input type="email" id="email" required autocomplete="username">
-      <label for="pass">Contraseña</label>
-      <input type="password" id="pass" required autocomplete="current-password">
-      <button class="btn" type="submit">Entrar</button>
-      <p class="msg" id="loginMsg"></p>
-    </form>
-  </section>
+<form class="login hidden" id="loginView">
+  <h2>Ingresar al panel</h2>
+  <label for="email">Email</label><input type="email" id="email" required autocomplete="username">
+  <label for="pass">Contraseña</label><input type="password" id="pass" required autocomplete="current-password">
+  <button class="btn dark full" type="submit">Entrar</button>
+  <p class="msg" id="loginMsg"></p>
+</form>
 
-  <!-- Panel -->
-  <div id="panelView" class="hidden">
-    <section class="card">
-      <h2>Subir un trabajo</h2>
-      <form id="upForm">
-        <label class="drop" id="drop">
-          <input type="file" id="file" accept="image/*" required>
-          <strong>Tocá para elegir una foto</strong>
-          <span>o sacala con la cámara</span>
-          <img id="preview" class="hidden" alt="">
-        </label>
-        <label for="titulo">Tipo de trabajo</label>
-        <input type="text" id="titulo" placeholder="Ej: Pérgola, Portón, Reja" required list="tipos">
-        <datalist id="tipos"><option>Pérgola</option><option>Portón</option><option>Reja</option><option>Aberturas</option><option>Escalera</option></datalist>
-        <label for="detalle">Detalle (opcional)</label>
-        <input type="text" id="detalle" placeholder="Ej: Terraza en Palermo">
-        <button class="btn" type="submit" id="upBtn">Publicar en la web</button>
-        <p class="msg" id="upMsg"></p>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Fotos publicadas</h2>
-      <div class="list" id="list"></div>
-    </section>
-  </div>
-</main>
+<div class="editor hidden" id="editorView">
+  <aside class="side">
+    <div class="tabs" id="tabs">
+      <button data-t="textos" class="on">Textos</button>
+      <button data-t="trabajos">Trabajos</button>
+      <button data-t="imagenes">Imágenes</button>
+      <button data-t="secciones">Secciones</button>
+      <button data-t="diseno">Diseño</button>
+    </div>
+    <div class="pane" id="pane"></div>
+  </aside>
+  <div class="preview mobile" id="preview"><iframe id="frame" title="Vista previa de la página"></iframe></div>
+</div>
 
 <script src="config.js"></script>
+<script src="store.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-const cfg = window.MARTELLI_CONFIG || {};
-const DEMO = !cfg.supabaseUrl || !cfg.supabaseKey;
-const $ = id => document.getElementById(id);
-const msg = (el, text, type='') => { el.textContent = text; el.className = 'msg ' + type; };
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let W, Site, published, draft, cats = [], tab = 'textos', selKey = null, openCat = null;
 
-// ---------- capa de datos (Supabase o demo en memoria) ----------
-let api;
-if (DEMO) {
-  $('demoBar').classList.remove('hidden');
-  let rows = [
-    {id:'1', titulo:'Pérgola', detalle:'Terraza', url:'images/pergola-terraza.jpg', orden:0},
-    {id:'2', titulo:'Pérgola', detalle:'Vista urbana', url:'images/pergola-urbana.jpg', orden:1},
-    {id:'3', titulo:'Aberturas', detalle:'Hierro y vidrio', url:'images/puerta-vidrio.jpg', orden:2},
-  ];
-  api = {
-    session: async () => false,
-    login: async () => {},
-    logout: async () => {},
-    list: async () => [...rows].sort((a,b)=>a.orden-b.orden),
-    add: async (blob, titulo, detalle) => {
-      rows.forEach(r => r.orden++);
-      rows.push({id:String(Date.now()), titulo, detalle, url:URL.createObjectURL(blob), orden:0});
-    },
-    remove: async r => { rows = rows.filter(x => x.id !== r.id); },
-    setOrder: async (r, orden) => { rows.find(x => x.id === r.id).orden = orden; },
-  };
-} else {
-  const sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
-  const pub = path => sb.storage.from('trabajos').getPublicUrl(path).data.publicUrl;
-  const check = ({error}) => { if (error) throw error; };
-  api = {
-    session: async () => !!(await sb.auth.getSession()).data.session,
-    login: async (email, password) => check(await sb.auth.signInWithPassword({email, password})),
-    logout: async () => sb.auth.signOut(),
-    list: async () => {
-      const {data, error} = await sb.from('trabajos').select('*').order('orden').order('created_at', {ascending:false});
-      if (error) throw error;
-      return data.map(r => ({...r, url: pub(r.foto_path)}));
-    },
-    add: async (blob, titulo, detalle) => {
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
-      check(await sb.storage.from('trabajos').upload(path, blob, {contentType:'image/jpeg'}));
-      const {data} = await sb.from('trabajos').select('orden').order('orden').limit(1);
-      const orden = data && data.length ? data[0].orden - 1 : 0;   // queda primera
-      check(await sb.from('trabajos').insert({titulo, detalle: detalle || null, foto_path: path, orden}));
-    },
-    remove: async r => {
-      check(await sb.from('trabajos').delete().eq('id', r.id));
-      await sb.storage.from('trabajos').remove([r.foto_path]);
-    },
-    setOrder: async (r, orden) => check(await sb.from('trabajos').update({orden}).eq('id', r.id)),
-  };
+function toast(text, err) {
+  const t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = text;
+  document.body.appendChild(t); setTimeout(() => t.remove(), err ? 5000 : 2200);
 }
+const fail = e => toast('Error: ' + (e.message || e), true);
 
-// ---------- achicar foto del celular antes de subir (máx 1600px, JPG) ----------
-async function shrink(file, max = 1600) {
-  const img = await createImageBitmap(file, {imageOrientation:'from-image'}).catch(() => null);
+// Achica la foto antes de subir (máx 1600px, JPG)
+async function shrink(file, max = Store.DEMO ? 1200 : 1600) {
+  const img = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => null);
   if (!img) return file;
   const s = Math.min(1, max / Math.max(img.width, img.height));
   const c = document.createElement('canvas');
   c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
   c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-  return new Promise(res => c.toBlob(res, 'image/jpeg', 0.82));
+  return new Promise(r => c.toBlob(r, 'image/jpeg', Store.DEMO ? 0.72 : 0.82));
 }
 
-// ---------- vistas ----------
-function show(logged) {
-  $('loginView').classList.toggle('hidden', logged);
-  $('panelView').classList.toggle('hidden', !logged);
-  $('logout').classList.toggle('hidden', !logged);
-  if (logged) render();
-}
+// ---------- estado ----------
+const dirty = () => JSON.stringify(draft) !== JSON.stringify(published);
+function syncButtons() { const d = dirty(); $('#publish').disabled = !d; $('#discard').disabled = !d; }
+function update(rerender = true) { if (rerender && Site) Site.render(draft, cats); syncButtons(); }
+async function reloadCats() { cats = await Store.getCategorias(); Site.render(draft, cats); renderPane(); }
 
-async function render() {
-  const list = $('list');
-  try {
-    const rows = await api.list();
-    list.innerHTML = rows.length ? '' : '<p class="empty">Todavía no hay fotos. La web muestra las fotos de ejemplo.</p>';
-    rows.forEach((r, i) => {
-      const el = document.createElement('div');
-      el.className = 'item';
-      el.innerHTML = `<img alt=""><div class="txt"><b></b><span></span></div>
-        <div class="acts"><button title="Subir">↑</button><button title="Bajar">↓</button><button class="del" title="Borrar">✕</button></div>`;
-      el.querySelector('img').src = r.url;
-      el.querySelector('b').textContent = r.titulo;
-      el.querySelector('span').textContent = r.detalle || '';
-      const [up, down, del] = el.querySelectorAll('button');
-      up.disabled = i === 0; down.disabled = i === rows.length - 1;
-      const swap = async j => {
-        const a = rows[i], b = rows[j];
-        // renumerar todo para evitar empates
-        await Promise.all(rows.map((x, k) => api.setOrder(x, x === a ? j : x === b ? i : k)));
-        render();
-      };
-      up.onclick = () => swap(i - 1);
-      down.onclick = () => swap(i + 1);
-      del.onclick = async () => {
-        if (!confirm(`¿Borrar "${r.titulo}" de la web?`)) return;
-        await api.remove(r); render();
-      };
-      list.appendChild(el);
+// ---------- arranque ----------
+async function start() {
+  $('#editorView').classList.remove('hidden');
+  if (Store.DEMO) { $('#demoBar').classList.remove('hidden'); $('#editorView').classList.add('with-demo'); }
+  const [cfg, c] = await Promise.all([Store.getConfig(), Store.getCategorias()]).catch(e => { fail(e); return [null, []]; });
+  cats = c;
+  const frame = $('#frame');
+  frame.onload = () => {
+    W = frame.contentWindow; Site = W.Site;
+    published = Site.merge(cfg); draft = Site.clone(published);
+    Site.enableEdit({
+      onText(k, v) { draft.texts[k] = v; syncButtons(); if (selKey === k) { const ta = $('#tText'); if (ta && document.activeElement !== ta) ta.value = v; } },
+      onSelect(k) { selKey = k; if (tab !== 'textos') setTab('textos'); else renderPane(); },
+      onImage() { setTab('imagenes'); },
     });
-  } catch (e) {
-    list.innerHTML = '<p class="msg err">No se pudieron cargar las fotos: ' + e.message + '</p>';
-  }
+    Site.render(draft, cats);
+    renderPane(); syncButtons();
+  };
+  frame.src = 'index.html?edit=1';
 }
 
-$('loginForm').onsubmit = async e => {
-  e.preventDefault();
-  msg($('loginMsg'), 'Entrando…');
-  try { await api.login($('email').value.trim(), $('pass').value); show(true); }
-  catch { msg($('loginMsg'), 'Email o contraseña incorrectos.', 'err'); }
+$('#publish').onclick = async () => {
+  try { await Store.saveConfig(draft); published = Site.clone(draft); syncButtons(); toast('¡Publicado! Ya se ve en la web.'); }
+  catch (e) { fail(e); }
 };
-$('logout').onclick = async () => { await api.logout(); show(false); };
-
-$('file').onchange = () => {
-  const f = $('file').files[0];
-  const p = $('preview');
-  if (f) { p.src = URL.createObjectURL(f); p.classList.remove('hidden'); }
+$('#discard').onclick = () => {
+  if (!confirm('¿Descartar los cambios sin publicar?')) return;
+  draft = Site.clone(published); update(); renderPane();
 };
+$('#resetDemo').onclick = () => { if (confirm('¿Borrar todo lo hecho en la demo y volver al original?')) { Store.resetDemo(); location.reload(); } };
+window.addEventListener('beforeunload', e => { if (draft && dirty()) { e.preventDefault(); e.returnValue = ''; } });
 
-$('upForm').onsubmit = async e => {
-  e.preventDefault();
-  const f = $('file').files[0];
-  if (!f) return;
-  $('upBtn').disabled = true;
-  msg($('upMsg'), 'Subiendo foto…');
-  try {
-    await api.add(await shrink(f), $('titulo').value.trim(), $('detalle').value.trim());
-    msg($('upMsg'), '¡Listo! Ya está en la web.', 'ok');
-    e.target.reset(); $('preview').classList.add('hidden');
-    render();
-  } catch (err) {
-    msg($('upMsg'), 'No se pudo subir: ' + err.message, 'err');
+$('#dev').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $('#dev').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  $('#preview').classList.toggle('mobile', b.dataset.d === 'mobile');
+};
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.t); };
+function setTab(t) {
+  tab = t;
+  $('#tabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  renderPane(); $('#pane').scrollTop = 0;
+}
+
+// ---------- helpers de controles ----------
+function slider(label, val, min, max, step, onInput, fmt = v => v) {
+  const row = document.createElement('div'); row.className = 'row';
+  row.innerHTML = `<label>${esc(label)}</label><input type="range" min="${min}" max="${max}" step="${step}" value="${val}"><output>${fmt(val)}</output>`;
+  const inp = row.querySelector('input'), out = row.querySelector('output');
+  inp.oninput = () => { out.textContent = fmt(+inp.value); onInput(+inp.value); };
+  return row;
+}
+function select(label, val, options, onChange) {
+  const row = document.createElement('div'); row.className = 'row';
+  row.innerHTML = `<label>${esc(label)}</label><select style="flex:1.3">${options.map(([v, t]) => `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
+  row.querySelector('select').onchange = e => onChange(e.target.value);
+  return row;
+}
+function seg(val, options, onChange) {
+  const d = document.createElement('div'); d.className = 'seg';
+  d.innerHTML = options.map(([v, t]) => `<button type="button" data-v="${esc(v)}" class="${String(v) === String(val) ? 'on' : ''}">${esc(t)}</button>`).join('');
+  d.onclick = e => { const b = e.target.closest('button'); if (!b) return; d.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); onChange(b.dataset.v); };
+  return d;
+}
+function h(text, hint) { const f = document.createDocumentFragment(); const e = document.createElement('h3'); e.textContent = text; f.appendChild(e); if (hint) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = hint; f.appendChild(p); } return f; }
+function fileBtn(text, multiple, onFiles) {
+  const l = document.createElement('label'); l.className = 'file-btn';
+  l.innerHTML = `<input type="file" accept="image/*" ${multiple ? 'multiple' : ''}>${esc(text)}`;
+  l.querySelector('input').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; if (fs.length) onFiles(fs); };
+  return l;
+}
+const FOCUS_OPTS = [['center', 'Centro'], ['top', 'Arriba'], ['bottom', 'Abajo'], ['left', 'Izquierda'], ['right', 'Derecha']];
+
+// ---------- paneles ----------
+function renderPane() {
+  const p = $('#pane'); p.innerHTML = '';
+  ({ textos: paneTextos, trabajos: paneTrabajos, imagenes: paneImagenes, secciones: paneSecciones, diseno: paneDiseno })[tab](p);
+}
+
+function paneTextos(p) {
+  p.appendChild(h('Textos', 'Tocá cualquier texto en la vista previa para escribir directamente, o elegilo de la lista.'));
+  if (selKey) {
+    const st = draft.styles[selKey] || {};
+    const setSt = (prop, v) => { draft.styles[selKey] = { ...(draft.styles[selKey] || {}), [prop]: v }; update(); };
+    const label = Site.TEXT_META.flatMap(g => g[1]).find(x => x[0] === selKey);
+    const box = document.createElement('div'); box.className = 'tedit';
+    box.innerHTML = `<b>${esc(label ? label[1] : selKey)}</b><textarea id="tText"></textarea>`;
+    const ta = box.querySelector('textarea'); ta.value = draft.texts[selKey] ?? '';
+    ta.oninput = () => { draft.texts[selKey] = ta.value; Site.setText(selKey, ta.value); syncButtons(); };
+    box.appendChild(slider('Tamaño', st.size || 1, 0.5, 2, 0.05, v => setSt('size', v), v => Math.round(v * 100) + '%'));
+    box.appendChild(select('Grosor', st.weight || '', [['', 'Original'], [300, 'Fino'], [400, 'Normal'], [500, 'Medio'], [600, 'Semi negrita'], [700, 'Negrita'], [800, 'Extra negrita']], v => setSt('weight', v ? +v : null)));
+    box.appendChild(slider('Espaciado letras', st.spacing || 0, -0.05, 0.3, 0.01, v => setSt('spacing', v), v => v.toFixed(2)));
+    const al = document.createElement('div'); al.className = 'row'; al.innerHTML = '<label>Alineación</label>';
+    al.appendChild(seg(st.align || '', [['', 'Auto'], ['left', 'Izq'], ['center', 'Centro'], ['right', 'Der']], v => setSt('align', v || null)));
+    al.lastChild.style.flex = '1.3';
+    box.appendChild(al);
+    const rs = document.createElement('button'); rs.className = 'btn full'; rs.textContent = 'Volver al texto y estilo original';
+    rs.onclick = () => { draft.texts[selKey] = Site.DEFAULT.texts[selKey]; delete draft.styles[selKey]; update(); renderPane(); };
+    box.appendChild(rs);
+    p.appendChild(box);
   }
-  $('upBtn').disabled = false;
-};
+  // WhatsApp
+  p.appendChild(h('WhatsApp'));
+  const wa = document.createElement('div');
+  wa.innerHTML = `<div class="row"><label>Número</label><input type="text" id="waNum" style="flex:1.3" inputmode="numeric"></div>
+    <div class="row" style="align-items:flex-start"><label>Mensaje</label><textarea id="waMsg" style="flex:1.3"></textarea></div>`;
+  wa.querySelector('#waNum').value = draft.contact.whatsapp;
+  wa.querySelector('#waMsg').value = draft.contact.message;
+  wa.querySelector('#waNum').oninput = e => { draft.contact.whatsapp = e.target.value.replace(/[^\d]/g, ''); update(); };
+  wa.querySelector('#waMsg').oninput = e => { draft.contact.message = e.target.value; update(); };
+  p.appendChild(wa);
+  // Lista
+  Site.TEXT_META.forEach(([group, items]) => {
+    p.appendChild(h(group));
+    const l = document.createElement('div'); l.className = 'tlist';
+    items.forEach(([k, name]) => {
+      const b = document.createElement('button'); b.className = k === selKey ? 'on' : '';
+      b.innerHTML = `${esc(name)}<small>${esc(draft.texts[k])}</small>`;
+      b.onclick = () => { selKey = k; renderPane(); Site.focusText(k); };
+      l.appendChild(b);
+    });
+    p.appendChild(l);
+  });
+}
 
-// En modo demo no hace falta login: entra directo al panel
-if (DEMO) { show(true); $('logout').classList.add('hidden'); }
-else api.session().then(show);
+function paneTrabajos(p) {
+  p.appendChild(h('Categorías de trabajos', 'Cada categoría aparece en la web con su foto de portada. Al tocarla se ven todas sus fotos. Estos cambios se guardan al instante.'));
+  cats.forEach((cat, i) => {
+    const el = document.createElement('div'); el.className = 'cat';
+    const cover = cat.portada || (cat.fotos[0] && cat.fotos[0].path);
+    el.innerHTML = `<div class="cat-h">${cover ? '<img alt="">' : '<div class="ph"></div>'}<input type="text">
+      <button class="ibtn" title="Subir">↑</button><button class="ibtn" title="Bajar">↓</button><button class="ibtn del" title="Borrar">✕</button></div>`;
+    if (cover) el.querySelector('img').src = Store.url(cover);
+    const name = el.querySelector('input'); name.value = cat.nombre;
+    name.onchange = () => name.value.trim() && Store.updateCategoria(cat.id, { nombre: name.value.trim() }).then(reloadCats).catch(fail);
+    const [up, down, del] = el.querySelectorAll('.ibtn');
+    up.disabled = i === 0; down.disabled = i === cats.length - 1;
+    const move = async d => {
+      try { const order = cats.slice(); [order[i], order[i + d]] = [order[i + d], order[i]];
+        await Promise.all(order.map((c, k) => Store.updateCategoria(c.id, { orden: k }))); reloadCats(); } catch (e) { fail(e); }
+    };
+    up.onclick = () => move(-1); down.onclick = () => move(1);
+    del.onclick = () => confirm(`¿Borrar la categoría "${cat.nombre}" y sus ${cat.fotos.length} fotos?`) && Store.deleteCategoria(cat).then(reloadCats).catch(fail);
+
+    const body = document.createElement('div'); body.className = 'cat-b';
+    const tg = document.createElement('button'); tg.className = 'btn'; tg.style.width = '100%';
+    tg.textContent = (openCat === cat.id ? '▾ ' : '▸ ') + `Fotos (${cat.fotos.length})`;
+    tg.onclick = () => { openCat = openCat === cat.id ? null : cat.id; renderPane(); };
+    body.appendChild(tg);
+    if (openCat === cat.id) {
+      body.appendChild(select('Encuadre de portada', cat.encuadre || 'center', FOCUS_OPTS, v => Store.updateCategoria(cat.id, { encuadre: v }).then(reloadCats).catch(fail)));
+      const grid = document.createElement('div'); grid.className = 'photos';
+      const coverIdx = Math.max(0, cat.fotos.findIndex(f => f.path === cover));
+      cat.fotos.forEach((f, j) => {
+        const isCover = j === coverIdx;
+        const it = document.createElement('div'); it.className = 'ph-item';
+        it.innerHTML = `<img alt="">${isCover ? '<span class="star">Portada</span>' : ''}<div class="bar">
+          <button title="Mover antes">←</button><button title="Usar de portada">★</button><button title="Mover después">→</button><button title="Borrar">✕</button></div>`;
+        it.querySelector('img').src = Store.url(f.path);
+        const [l, star, r, x] = it.querySelectorAll('.bar button');
+        l.disabled = j === 0; r.disabled = j === cat.fotos.length - 1; star.disabled = isCover;
+        const mv = async d => {
+          try { const o = cat.fotos.slice(); [o[j], o[j + d]] = [o[j + d], o[j]];
+            await Promise.all(o.map((ff, k) => Store.updateFoto(cat.id, ff.id, { orden: k }))); reloadCats(); } catch (e) { fail(e); }
+        };
+        l.onclick = () => mv(-1); r.onclick = () => mv(1);
+        star.onclick = () => Store.updateCategoria(cat.id, { portada: f.path }).then(reloadCats).catch(fail);
+        x.onclick = async () => {
+          if (!confirm('¿Borrar esta foto?')) return;
+          try { if (cat.portada === f.path) await Store.updateCategoria(cat.id, { portada: null }); await Store.deleteFoto(cat.id, f); reloadCats(); } catch (e) { fail(e); }
+        };
+        grid.appendChild(it);
+      });
+      body.appendChild(grid);
+      body.appendChild(fileBtn('+ Agregar fotos', true, async files => {
+        toast('Subiendo ' + files.length + (files.length > 1 ? ' fotos…' : ' foto…'));
+        try { let n = cat.fotos.length; for (const f of files) await Store.addFoto(cat.id, await shrink(f), n++); toast('Fotos agregadas'); reloadCats(); }
+        catch (e) { fail(e); reloadCats(); }
+      }));
+    }
+    el.appendChild(body);
+    p.appendChild(el);
+  });
+  const add = document.createElement('div'); add.className = 'row';
+  add.innerHTML = '<input type="text" placeholder="Nueva categoría (ej: Rejas)" style="flex:1"><button class="btn dark">Crear</button>';
+  const [inp, btn] = add.children;
+  const create = async () => {
+    const n = inp.value.trim(); if (!n) return;
+    try { await Store.addCategoria(n, cats.length); cats = await Store.getCategorias(); openCat = cats[cats.length - 1].id; Site.render(draft, cats); renderPane(); toast('Categoría creada. Agregale fotos.'); }
+    catch (e) { fail(e); }
+  };
+  btn.onclick = create; inp.onkeydown = e => e.key === 'Enter' && create();
+  p.appendChild(add);
+  const note = document.createElement('p'); note.className = 'hint'; note.style.marginTop = '8px';
+  note.textContent = 'Las categorías sin fotos no se muestran en la web.';
+  p.appendChild(note);
+}
+
+function paneImagenes(p) {
+  p.appendChild(h('Foto de portada'));
+  const th = document.createElement('img'); th.className = 'thumb'; th.src = Store.url(draft.hero.image); th.alt = '';
+  p.appendChild(th);
+  p.appendChild(fileBtn('Cambiar foto de portada', false, async ([f]) => {
+    try { toast('Subiendo foto…'); draft.hero.image = await Store.uploadImage(await shrink(f, 2000)); update(); renderPane(); toast('Foto cambiada. Tocá Publicar para guardarla.'); }
+    catch (e) { fail(e); }
+  }));
+  p.appendChild(select('Encuadre', draft.hero.focus, FOCUS_OPTS, v => { draft.hero.focus = v; update(); }));
+  p.appendChild(slider('Alto', draft.hero.height, 50, 100, 5, v => { draft.hero.height = v; update(); }, v => v + '%'));
+
+  p.appendChild(h('Galería de trabajos'));
+  const lay = document.createElement('div'); lay.className = 'row'; lay.innerHTML = '<label>Disposición</label>';
+  const sg = seg(draft.gallery.layout, [['grid', 'Grilla'], ['carousel', 'Carrusel']], v => { draft.gallery.layout = v; update(); });
+  sg.style.flex = '1.3'; lay.appendChild(sg); p.appendChild(lay);
+  p.appendChild(select('Columnas (compu)', draft.gallery.columns, [[2, '2'], [3, '3'], [4, '4']], v => { draft.gallery.columns = +v; update(); }));
+  p.appendChild(select('Proporción', draft.gallery.ratio, [['4/5', 'Vertical'], ['1/1', 'Cuadrada'], ['4/3', 'Horizontal'], ['16/9', 'Panorámica']], v => { draft.gallery.ratio = v; update(); }));
+  p.appendChild(slider('Separación', draft.gallery.gap, 0.2, 2, 0.1, v => { draft.gallery.gap = v; update(); }, v => Math.round(v * 100) + '%'));
+  const n = document.createElement('p'); n.className = 'hint'; n.style.marginTop = '10px';
+  n.textContent = 'Las fotos y el encuadre de cada categoría se cambian en la pestaña Trabajos.';
+  p.appendChild(n);
+}
+
+function paneSecciones(p) {
+  p.appendChild(h('Orden y espaciado', 'La portada siempre va primero. El menú sigue el mismo orden.'));
+  const secs = draft.sections;
+  secs.forEach((s, i) => {
+    const w = document.createElement('div'); w.className = 'sec-wrap';
+    const isHero = s.id === 'hero';
+    w.innerHTML = `<div class="sec"><span class="name">${esc(Site.SECTION_NAMES[s.id])}</span>
+      ${isHero ? '' : `<label style="display:flex;gap:4px;align-items:center;color:var(--grey)"><input type="checkbox" ${s.visible ? 'checked' : ''}> Visible</label>
+      <button class="ibtn" title="Subir">↑</button><button class="ibtn" title="Bajar">↓</button>`}</div>`;
+    if (!isHero) {
+      w.querySelector('input').onchange = e => { s.visible = e.target.checked; update(); };
+      const [up, down] = w.querySelectorAll('.ibtn');
+      up.disabled = i <= 1; down.disabled = i === secs.length - 1;
+      const mv = d => { [secs[i], secs[i + d]] = [secs[i + d], secs[i]]; update(); renderPane(); };
+      up.onclick = () => mv(-1); down.onclick = () => mv(1);
+    }
+    w.appendChild(slider('Espacio interno', s.space, 0.3, 2, 0.1, v => { s.space = v; update(); }, v => Math.round(v * 100) + '%'));
+    w.addEventListener('click', e => { if (e.target.closest('.name')) Site.scrollToSection(s.id); });
+    p.appendChild(w);
+  });
+}
+
+function paneDiseno(p) {
+  const t = draft.theme;
+  p.appendChild(h('Colores'));
+  [['bg', 'Fondo'], ['bgAlt', 'Fondo "Sobre el taller"'], ['text', 'Texto'], ['muted', 'Texto secundario'], ['accent', 'Acento (botones)'], ['dark', 'Fondo oscuro (contacto)']].forEach(([k, label]) => {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = `<label>${esc(label)}</label><input type="color" value="${esc(t[k])}">`;
+    r.querySelector('input').oninput = e => { t[k] = e.target.value; update(); };
+    p.appendChild(r);
+  });
+  p.appendChild(h('Tipografía'));
+  p.appendChild(select('Fuente', t.font, Site.FONTS.map(f => [f, f === 'Helvetica' ? 'Helvetica (sistema)' : f]), v => { t.font = v; update(); }));
+  p.appendChild(slider('Tamaño base', t.baseSize, 14, 19, 0.5, v => { t.baseSize = v; update(); }, v => v + 'px'));
+  p.appendChild(select('Grosor de títulos', t.headingWeight, [[400, 'Normal'], [500, 'Medio'], [600, 'Semi negrita'], [700, 'Negrita'], [800, 'Extra negrita']], v => { t.headingWeight = +v; update(); }));
+  const r = document.createElement('button'); r.className = 'btn full'; r.textContent = 'Volver al diseño original';
+  r.onclick = () => { draft.theme = Site.clone(Site.DEFAULT.theme); update(); renderPane(); };
+  p.appendChild(r);
+}
+
+// ---------- login ----------
+(async () => {
+  if (Store.DEMO) return start();
+  const sb = supabase.createClient(window.MARTELLI_CONFIG.supabaseUrl, window.MARTELLI_CONFIG.supabaseKey);
+  Store.client = sb;
+  $('#logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+  const logged = !!(await sb.auth.getSession()).data.session;
+  if (logged) { $('#logout').classList.remove('hidden'); return start(); }
+  $('#loginView').classList.remove('hidden');
+  $('#loginView').onsubmit = async e => {
+    e.preventDefault(); $('#loginMsg').textContent = '';
+    const { error } = await sb.auth.signInWithPassword({ email: $('#email').value.trim(), password: $('#pass').value });
+    if (error) { $('#loginMsg').textContent = 'Email o contraseña incorrectos.'; return; }
+    $('#loginView').classList.add('hidden'); $('#logout').classList.remove('hidden'); start();
+  };
+})();
 </script>
 </body>
 </html>

@@ -1,7 +1,15 @@
 # Panel de administrador
 
-`admin.html` permite subir, ordenar y borrar las fotos de la sección **Trabajos** desde el celular.
-Sin configurar funciona en **modo demo** (no guarda nada) y la web muestra las fotos fijas de `images/`.
+`admin.html` es un editor en vivo de la web: muestra la página real y se edita sobre ella.
+
+- **Textos**: tocá cualquier texto en la vista previa y escribí. En la barra lateral: tamaño, grosor, espaciado y alineación. También el número y mensaje de WhatsApp.
+- **Trabajos**: crear, renombrar, ordenar y borrar categorías; subir, ordenar y borrar fotos; elegir portada y encuadre. *(Se guarda al instante.)*
+- **Imágenes**: foto de portada (encuadre y alto) y galería (grilla/carrusel, columnas, proporción, separación).
+- **Secciones**: orden, mostrar/ocultar y espacio de cada sección.
+- **Diseño**: colores, tipografía, tamaño base y grosor de títulos.
+- **Publicar** guarda los cambios en la web. **Descartar** vuelve a lo último publicado.
+
+Sin configurar funciona en **modo demo**: los cambios quedan solo en ese navegador.
 
 ## Conectarlo (una sola vez)
 
@@ -10,6 +18,6 @@ Sin configurar funciona en **modo demo** (no guarda nada) y la web muestra las f
 3. En **Authentication → Users → Add user**, crear el usuario con ese email y una contraseña.
 4. En **Authentication → Sign In / Providers**, desactivar *Allow new users to sign up*.
 5. En **Settings → API**, copiar *Project URL* y la clave *anon/publishable* en `config.js`.
+6. Entrar a `admin.html`, revisar todo y tocar **Publicar** una vez. Crear las categorías y subir las fotos desde la pestaña Trabajos.
 
-Listo: entrar a `tusitio.com/admin.html` con ese email y contraseña.
 Para sumar otro admin: `insert into admins (email) values ('otro@mail.com');` y crearle el usuario.
