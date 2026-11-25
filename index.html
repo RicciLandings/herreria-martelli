@@ -34,8 +34,10 @@
     position:fixed; top:0; left:0; right:0; z-index:55;
     display:flex; align-items:center; justify-content:space-between;
     padding:22px 6vw; color:var(--paper);
-    transition:background .7s var(--ease), color .7s var(--ease), padding .7s var(--ease), box-shadow .7s var(--ease);
+    transition:background .7s var(--ease), color .7s var(--ease), padding .7s var(--ease), box-shadow .7s var(--ease), transform .8s var(--ease-out);
   }
+  header.away{transform:translate3d(0, -100%, 0);}
+  body.editing header.away{transform:none;}
   header.solid{background:color-mix(in srgb, var(--paper) 88%, transparent); -webkit-backdrop-filter:blur(14px) saturate(1.2); backdrop-filter:blur(14px) saturate(1.2); color:var(--ink); padding:14px 6vw; box-shadow:0 1px 0 var(--line);}
   .brand{font-size:1.1rem; font-weight:700; letter-spacing:0.01em;}
   nav{display:flex; gap:34px;}
@@ -45,13 +47,12 @@
   .nav-toggle,.nav-backdrop,.wa-float{display:none;}
 
   /* ---------- hero ---------- */
-  /* la portada queda fija y las secciones siguientes la tapan al bajar (efecto telón) */
   .hero{
-    position:sticky; top:0; z-index:0; height:calc(var(--hero-h) * 1vh); height:calc(var(--hero-h) * 1svh); min-height:460px;
+    position:relative; z-index:0; height:calc(var(--hero-h) * 1vh); height:calc(var(--hero-h) * 1svh); min-height:460px;
     display:flex; align-items:flex-end; overflow:hidden; background:var(--steel); padding:0;
   }
   #app > section:not(.hero), #app > footer{position:relative; z-index:1;}
-  .hero-media{position:absolute; inset:0; overflow:hidden; will-change:transform; animation:heroIn 2.4s var(--ease-io) both;}
+  .hero-media{position:absolute; inset:-6% 0 0; overflow:hidden; will-change:transform; animation:heroIn 2.4s var(--ease-io) both;}
   .hero-img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; filter:saturate(.95) contrast(1.06);
     transition:opacity 2.6s var(--ease-io);}
   .hero-img.on{opacity:1;}
@@ -123,11 +124,13 @@
     background:rgba(10,9,7,.45); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); padding:5px 9px; border-radius:999px;}
   figcaption{margin-top:14px; font-size:.85rem; color:var(--grey); display:flex; justify-content:space-between; align-items:center; gap:12px;}
   .thumbs{display:flex; gap:6px;}
-  .thumb{width:34px; height:34px; padding:0; border:1px solid transparent; background:var(--paper-deep); cursor:pointer; overflow:hidden;
+  .thumb{position:relative; width:34px; height:34px; padding:0; border:1px solid transparent; background:var(--paper-deep); cursor:pointer; overflow:hidden;
     opacity:.5; transition:opacity .6s var(--ease), border-color .6s var(--ease);}
   .thumb img{width:100%; height:100%; object-fit:cover;}
   .thumb:hover{opacity:.85;}
   .thumb.on{opacity:1; border-color:var(--ink);}
+  .thumb i{position:absolute; left:0; bottom:0; height:2px; width:100%; background:var(--ember); transform-origin:left; animation:fill linear both;}
+  @keyframes fill{from{transform:scaleX(0);} to{transform:scaleX(1);}}
   figcaption .tag{color:var(--ink); font-weight:500; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase;}
   .gallery-note{margin:40px 0 0; font-size:.82rem; color:var(--grey); border-top:1px solid var(--line); padding-top:18px;}
   .gallery-empty{color:var(--grey);}

@@ -64,7 +64,7 @@
     if (!saved) return c;
     for (const k of ['theme', 'hero', 'intro', 'gallery', 'contact', 'texts', 'styles']) Object.assign(c[k], saved[k] || {});
     // compatibilidad: antes la portada tenía una sola foto
-    if (saved.hero && saved.hero.image && !(saved.hero.images && saved.hero.images.length)) c.hero.images = [saved.hero.image];
+    if (saved.hero && saved.hero.image && !(saved.hero.images && saved.hero.images.length) && saved.hero.image !== 'images/pergola-urbana.jpg') c.hero.images = [saved.hero.image];
     delete c.hero.image;
     if (!c.hero.images.length) c.hero.images = clone(DEFAULT.hero.images);
     if (Array.isArray(saved.sections)) {
@@ -308,10 +308,24 @@
   function startCard(card) {
     if (card.user || card.timer || edit || reduceMotion()) return;
     // primero se ve la foto principal un rato, después pasan los detalles
-    const step = () => { goCard(card, (card.i + 1) % card.n); card.timer = setTimeout(step, 3800); };
-    card.timer = setTimeout(step, 3200);
+    const DUR = 3400;
+    const step = () => { goCard(card, (card.i + 1) % card.n); progress(card, DUR); card.timer = setTimeout(step, DUR); };
+    progress(card, 2200);
+    card.timer = setTimeout(step, 2200);
   }
-  function stopCard(card) { clearTimeout(card.timer); card.timer = null; }
+  // barra que se llena en la miniatura activa: muestra que la foto va a cambiar sola
+  function progress(card, ms) {
+    card.el.querySelectorAll('.thumb i').forEach(b => b.remove());
+    const t = card.el.querySelectorAll('.thumb')[card.i];
+    if (!t) return;
+    const bar = document.createElement('i');
+    bar.style.animationDuration = ms + 'ms';
+    t.appendChild(bar);
+  }
+  function stopCard(card) {
+    clearTimeout(card.timer); card.timer = null;
+    card.el.querySelectorAll('.thumb i').forEach(b => b.remove());
+  }
   function stopCards() { cards.forEach(stopCard); cards = []; if (cardIO) cardIO.disconnect(); }
   function cardObserver() {
     if (cardIO) return cardIO;
@@ -319,7 +333,7 @@
       const card = cards.find(c => c.el === e.target);
       if (!card) return;
       if (e.isIntersecting && !introOpen) startCard(card); else stopCard(card);
-    }), { threshold: 0.6 });
+    }), { threshold: 0.35 });
     return cardIO;
   }
 
@@ -476,7 +490,7 @@
     onScroll();
   }
 
-  let ticking = false;
+  let ticking = false, lastY = 0;
   function parallax() {
     ticking = false;
     if (edit || reduceMotion()) return;
@@ -484,18 +498,23 @@
     if (!hero) return;
     const h = hero.offsetHeight, y = Math.min(window.scrollY, h), p = y / h;
     const hc = hero.querySelector('.hero-content'), media = hero.querySelector('.hero-media');
-    // el texto sube apenas y se desvanece antes de que llegue el menú; la foto se oscurece y se aleja
-    hc.style.transform = `translate3d(0, ${(-y * 0.12).toFixed(1)}px, 0)`;
-    hc.style.opacity = Math.max(0, 1 - p * 1.9).toFixed(3);
-    media.style.transform = `scale(${(1 + p * 0.06).toFixed(4)})`;
-    hero.style.setProperty('--shade', (p * 0.7).toFixed(3));
+    // la página baja normal; la foto se mueve más lento (profundidad) y el texto se desvanece
+    media.style.transform = `translate3d(0, ${(y * 0.35).toFixed(1)}px, 0)`;
+    hc.style.transform = `translate3d(0, ${(y * 0.12).toFixed(1)}px, 0)`;
+    hc.style.opacity = Math.max(0, 1 - p * 2.2).toFixed(3);
+    hero.style.setProperty('--shade', (p * 0.45).toFixed(3));
   }
   function onScroll() {
     if (!ticking) { ticking = true; requestAnimationFrame(parallax); }
     const header = document.getElementById('site-header');
-    const hero = document.querySelector('.hero');
-    const limit = hero ? hero.offsetHeight - 70 : 40;
-    if (header) header.classList.toggle('solid', window.scrollY > limit);
+    // el menú se esconde al bajar y vuelve al subir (sólido fuera de la portada)
+    const y = window.scrollY;
+    if (header) {
+      header.classList.toggle('solid', y > 40);
+      if (!document.body.classList.contains('menu-open')) header.classList.toggle('away', y > 120 && y > lastY + 2 ? true : y < lastY - 2 ? false : header.classList.contains('away'));
+      if (y < 120) header.classList.remove('away');
+    }
+    lastY = y;
     const wa = document.getElementById('waFloat');
     const contacto = document.getElementById('contacto');
     if (wa) {
