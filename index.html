@@ -91,7 +91,7 @@
   .gallery-grid.carousel figure{flex:0 0 calc((100% - (var(--cols) - 1) * 28px * var(--gap)) / var(--cols)); scroll-snap-align:start;}
   figure{margin:0;}
   .work{cursor:zoom-in; outline-offset:4px;}
-  .work.pop{animation:pop .55s ease both;}
+  .work.pop{animation:pop 1.1s cubic-bezier(.22,1,.36,1) both;}
   @keyframes pop{from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;}}
   .frame{position:relative; overflow:hidden; aspect-ratio:var(--ratio); background:var(--steel);}
   .frame img{width:100%; height:100%; object-fit:cover; transition:transform .6s ease;}
@@ -143,11 +143,11 @@
   .lb-count{position:absolute; top:28px; left:20px; color:#fff; opacity:.7; font-size:.8rem; letter-spacing:.1em;}
 
   /* ---------- animación de entrada ---------- */
-  .reveal{opacity:0; transform:translateY(16px); transition:opacity .9s ease var(--d,0s), transform .9s cubic-bezier(.2,.7,.2,1) var(--d,0s);}
+  .reveal{opacity:0; transform:translateY(18px); transition:opacity 1.6s cubic-bezier(.22,1,.36,1) var(--d,0s), transform 1.8s cubic-bezier(.22,1,.36,1) var(--d,0s); will-change:opacity, transform;}
   .reveal.in{opacity:1; transform:none;}
-  .hero-content .reveal{transform:translateY(22px);}
-  .hero-img{animation:heroIn 1.6s ease both;}
-  @keyframes heroIn{from{opacity:0; transform:scale(1.04);} to{opacity:1; transform:none;}}
+  .hero-content .reveal{transform:translateY(24px);}
+  .hero-img{animation:heroIn 2.8s cubic-bezier(.22,1,.36,1) both;}
+  @keyframes heroIn{from{opacity:0; transform:scale(1.05);} to{opacity:1; transform:none;}}
   body.editing .hero-img{animation:none;}
 
   /* ---------- modo edición (panel) ---------- */

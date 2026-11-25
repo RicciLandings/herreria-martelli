@@ -224,7 +224,7 @@
     list.forEach((it, i) => {
       const f = document.createElement('figure');
       f.className = 'work' + (animate ? ' pop' : '');
-      if (animate) f.style.animationDelay = Math.min(i, 12) * 45 + 'ms';
+      if (animate) f.style.animationDelay = Math.min(i, 12) * 80 + 'ms';
       f.tabIndex = 0;
       f.innerHTML = `<div class="frame"><img loading="lazy" alt=""><div class="panes">${panes}</div></div><figcaption><span class="tag"></span></figcaption>`;
       const img = f.querySelector('img');
@@ -251,7 +251,7 @@
       '.about .section-head, .about-zone, .about-text p', '.contact .section-head, .contact .lead, .contact .cta, .contact-list li'];
     groups.forEach((sel, gi) => document.querySelectorAll(sel).forEach((el, i) => {
       el.classList.add('reveal');
-      el.style.setProperty('--d', (gi === 0 ? 0.15 + i * 0.14 : i * 0.08) + 's');
+      el.style.setProperty('--d', (gi === 0 ? 0.35 + i * 0.22 : i * 0.12) + 's');
       io.observe(el);
     }));
   }
