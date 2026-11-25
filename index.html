@@ -108,7 +108,7 @@
   .work.leaving{opacity:0; transform:translateY(-4px); pointer-events:none;}
   .work.pop{animation:pop 1.6s var(--ease) both;}
   @keyframes pop{
-    0%{opacity:0; transform:translateY(14px); filter:blur(6px);}
+    0%{opacity:0; transform:scale(1.04); filter:blur(10px);}
     60%{filter:blur(0);}
     100%{opacity:1; transform:none; filter:none;}
   }
@@ -189,12 +189,12 @@
   .section-head .rule{transform-origin:left; transition:transform 1.8s var(--ease-out) calc(var(--d,0s) + .2s);}
   .section-head.reveal .rule{transform:scaleX(0);}
   .section-head.reveal.in .rule{transform:scaleX(1);}
-  /* fotos de trabajos: se descubren de abajo hacia arriba */
+  /* fotos de trabajos: aparecen con un mini zoom y desenfoque */
   .work.img-reveal{opacity:1; transform:none;}
-  .work.img-reveal .frame{clip-path:inset(100% 0 0 0); transition:clip-path 1.5s cubic-bezier(.65,0,.25,1) var(--d,0s);}
-  .work.img-reveal .slides{scale:1.12; transition:transform 1.5s cubic-bezier(.65,0,.25,1), scale 2.2s var(--ease-out) var(--d,0s);}
-  .work.img-reveal figcaption{opacity:0; transition:opacity 1s var(--ease-io) calc(var(--d,0s) + .6s);}
-  .work.img-reveal.in .frame{clip-path:inset(0 0 0 0);}
+  .work.img-reveal .frame{opacity:0; filter:blur(14px); transition:opacity 1.3s var(--ease-io) var(--d,0s), filter 1.5s var(--ease) var(--d,0s);}
+  .work.img-reveal .slides{scale:1.08; transition:transform 1.1s cubic-bezier(.65,0,.25,1), scale 2s var(--ease-out) var(--d,0s);}
+  .work.img-reveal figcaption{opacity:0; transition:opacity 1s var(--ease-io) calc(var(--d,0s) + .5s);}
+  .work.img-reveal.in .frame{opacity:1; filter:none;}
   .work.img-reveal.in .slides{scale:1;}
   .work.img-reveal.in figcaption{opacity:1;}
 

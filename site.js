@@ -284,7 +284,10 @@
           th.appendChild(b);
         });
         cards.push(card);
-        cardObserver().observe(f);
+        if (canHover()) {
+          f.addEventListener('mouseenter', () => { card.user = false; startCard(card); });
+          f.addEventListener('mouseleave', () => { stopCard(card); if (card.i !== 0) goCard(card, card.n); });
+        } else cardObserver().observe(f);
       }
       goCard(card, 0, true);
       f.querySelector('.frame').onclick = () => openLightbox(it.imgs.map(p => ({ path: p, nombre: it.nombre })), card.i);
@@ -309,13 +312,15 @@
     const cnt = card.el.querySelector('.frame-count');
     if (cnt) cnt.textContent = (card.i + 1) + ' / ' + card.n;
   }
+  const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   function startCard(card) {
     if (card.user || card.timer || edit || reduceMotion()) return;
     // primero se ve la foto principal un rato, después pasan los detalles
     const DUR = 2600;
     const step = () => { goCard(card, card.i + 1); progress(card, DUR); card.timer = setTimeout(step, DUR); };
-    progress(card, 1000);
-    card.timer = setTimeout(step, 1000);
+    const first = canHover() ? 450 : 1000;
+    progress(card, first);
+    card.timer = setTimeout(step, first);
   }
   // barra que se llena en la miniatura activa: muestra que la foto va a cambiar sola
   function progress(card, ms) {
@@ -336,8 +341,9 @@
     cardIO = new IntersectionObserver(entries => entries.forEach(e => {
       const card = cards.find(c => c.el === e.target);
       if (!card) return;
-      if (e.isIntersecting && !introOpen) startCard(card); else stopCard(card);
-    }), { threshold: 0.35 });
+      if (e.isIntersecting && !introOpen) { cards.forEach(c => c !== card && stopCard(c)); startCard(card); }
+      else stopCard(card);
+    }), { threshold: 0.9, rootMargin: '-20% 0px -20% 0px' });
     return cardIO;
   }
 
@@ -430,7 +436,7 @@
       if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
     }), { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
     document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
-    cards.forEach(c => { const r = c.el.getBoundingClientRect(); if (r.top < innerHeight && r.bottom > 0) startCard(c); });
+
   }
 
   // ---------- pantalla de inicio ----------
