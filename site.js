@@ -11,6 +11,7 @@
       { id: 'contacto', visible: true, space: 1 },
     ],
     hero: { image: 'images/pergola-urbana.jpg', focus: 'center', height: 100 },
+    intro: { enabled: true },
     gallery: { layout: 'grid', columns: 3, ratio: '4/5', gap: 1 },
     contact: { whatsapp: '5491148891662', message: 'Hola! Quisiera un presupuesto para un trabajo de herrería.' },
     texts: {
@@ -36,12 +37,14 @@
       lbl_ig: 'Instagram', val_ig: '@herreriamartelli',
       footer_left: '© Herrería Martelli', footer_right: 'Hecho a mano en Vicente López',
       wa_float: 'Pedir presupuesto por WhatsApp',
+      intro_title: 'Herrería Martelli', intro_btn: 'Ingresar',
     },
     styles: {}, // { clave: {size, weight, spacing, align} }
   };
 
   // Nombres legibles de cada texto, agrupados por sección (los usa el panel)
   const TEXT_META = [
+    ['Pantalla de inicio', [['intro_title', 'Título'], ['intro_btn', 'Botón']]],
     ['Menú', [['brand', 'Nombre'], ['nav_trabajos', 'Link Trabajos'], ['nav_sobre', 'Link Sobre el taller'], ['nav_contacto', 'Link Contacto']]],
     ['Portada', [['hero_eyebrow', 'Volanta'], ['hero_title', 'Título'], ['hero_text', 'Texto'], ['hero_cta', 'Botón']]],
     ['Trabajos', [['trabajos_eyebrow', 'Volanta'], ['trabajos_title', 'Título'], ['trabajos_sub', 'Servicios'], ['filter_all', 'Botón "Todos"'], ['trabajos_hint', 'Ayuda']]],
@@ -59,7 +62,7 @@
   function merge(saved) {
     const c = clone(DEFAULT);
     if (!saved) return c;
-    for (const k of ['theme', 'hero', 'gallery', 'contact', 'texts', 'styles']) Object.assign(c[k], saved[k] || {});
+    for (const k of ['theme', 'hero', 'intro', 'gallery', 'contact', 'texts', 'styles']) Object.assign(c[k], saved[k] || {});
     if (Array.isArray(saved.sections)) {
       const ids = saved.sections.map(s => s.id).filter(id => SECTION_NAMES[id]);
       c.sections = saved.sections.filter(s => SECTION_NAMES[s.id]).map(s => ({ ...DEFAULT.sections.find(d => d.id === s.id), ...s }))
@@ -210,7 +213,7 @@
       if (token !== switchToken) return;
       renderGallery(!reduce);
       setTimeout(() => { if (token === switchToken) g.style.minHeight = ''; }, 1600);
-    }, reduce ? 0 : 520);
+    }, reduce ? 0 : 320);
   }
 
   function renderGallery(animate) {
@@ -245,11 +248,13 @@
     list.forEach((it, i) => {
       const f = document.createElement('figure');
       f.className = 'work' + (animate ? ' pop' : '');
-      if (animate) f.style.animationDelay = Math.min(i, 10) * 130 + 'ms';
+      if (animate) f.style.animationDelay = Math.min(i, 10) * 90 + 'ms';
       f.tabIndex = 0;
       f.innerHTML = `<div class="frame"><img loading="lazy" alt=""><div class="panes">${panes}</div></div><figcaption><span class="tag"></span></figcaption>`;
       const img = f.querySelector('img');
+      img.onload = () => img.classList.add('ld');
       img.src = Store.url(it.path); img.alt = it.nombre;
+      if (img.complete) img.classList.add('ld');
       img.style.objectPosition = FOCUS[it.encuadre] || FOCUS.center;
       f.querySelector('.tag').textContent = it.nombre;
       const open = () => openLightbox(list, i);
@@ -260,21 +265,60 @@
     if (!list.length) g.innerHTML = '<p class="gallery-empty">Pronto vas a ver acá nuestros trabajos.</p>';
   }
 
-  // Animación suave de entrada de textos
-  let io = null;
+  // Animación suave de entrada de textos (espera a que se cierre la pantalla de inicio)
+  let io = null, introOpen = false;
+  const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function reveal() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reduceMotion()) return;
     if (io) io.disconnect();
+    const groups = [['.hero-content > *', 0.15, 0.16], ['.gallery .section-head, .services-line, .filters, .gallery-note', 0, 0.1],
+      ['.about .section-head, .about-zone, .about-text p', 0, 0.1], ['.contact .section-head, .contact .lead, .contact .cta, .contact-list li', 0, 0.08]];
+    groups.forEach(([sel, base, step]) => document.querySelectorAll(sel).forEach((el, i) => {
+      el.classList.add('reveal');
+      el.style.setProperty('--d', (base + i * step).toFixed(2) + 's');
+    }));
+    if (!introOpen) observe();
+  }
+  function observe() {
+    if (reduceMotion()) return;
+    document.documentElement.classList.add('ready');
     io = new IntersectionObserver(entries => entries.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-    }), { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    const groups = ['.hero-content > *', '.gallery .section-head, .services-line, .filters, .gallery-note',
-      '.about .section-head, .about-zone, .about-text p', '.contact .section-head, .contact .lead, .contact .cta, .contact-list li'];
-    groups.forEach((sel, gi) => document.querySelectorAll(sel).forEach((el, i) => {
-      el.classList.add('reveal');
-      el.style.setProperty('--d', (gi === 0 ? 0.35 + i * 0.22 : i * 0.12) + 's');
-      io.observe(el);
-    }));
+    }), { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
+  }
+
+  // ---------- pantalla de inicio ----------
+  function showIntro(preview) {
+    const c = state.cfg;
+    let el = document.getElementById('intro');
+    if (el) el.remove();
+    el = document.createElement('div');
+    el.id = 'intro'; el.className = 'intro';
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Bienvenida');
+    el.innerHTML = `<div class="intro-in">
+        <span class="grid-mark"><span></span><span></span><span></span><span></span></span>
+        <h1 class="intro-title"></h1><span class="intro-line"></span>
+        <button type="button" class="intro-btn"><span></span><i aria-hidden="true">→</i></button>
+      </div>`;
+    el.querySelector('.intro-title').textContent = c.texts.intro_title || DEFAULT.texts.intro_title;
+    el.querySelector('.intro-btn span').textContent = c.texts.intro_btn || DEFAULT.texts.intro_btn;
+    document.body.appendChild(el);
+    document.body.classList.add('intro-lock');
+    if (!preview) introOpen = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+    const btn = el.querySelector('.intro-btn');
+    const close = () => {
+      if (el.classList.contains('leave')) return;
+      el.classList.add('leave');
+      document.body.classList.remove('intro-lock');
+      try { sessionStorage.setItem('mh_intro', '1'); } catch {}
+      setTimeout(() => { if (introOpen) { introOpen = false; observe(); } }, 450);
+      setTimeout(() => el.remove(), 1500);
+    };
+    btn.onclick = close;
+    const onKey = e => { if (e.key === 'Enter' || e.key === 'Escape') { document.removeEventListener('keydown', onKey); close(); } };
+    document.addEventListener('keydown', onKey);
   }
 
   function fillText(el) {
@@ -306,7 +350,17 @@
     header.classList.toggle('solid', window.scrollY > 40);
   }
 
+  let ticking = false;
+  function parallax() {
+    ticking = false;
+    if (edit || reduceMotion()) return;
+    const hc = document.querySelector('.hero-content'), h = window.innerHeight, y = window.scrollY;
+    if (!hc || y > h) return;
+    hc.style.transform = `translate3d(0, ${(y * 0.18).toFixed(1)}px, 0)`;
+    hc.style.opacity = Math.max(0, 1 - y / (h * 0.75)).toFixed(3);
+  }
   function onScroll() {
+    if (!ticking) { ticking = true; requestAnimationFrame(parallax); }
     const header = document.getElementById('site-header');
     if (header) header.classList.toggle('solid', window.scrollY > 40);
     const wa = document.getElementById('waFloat');
@@ -408,11 +462,17 @@
     setText(k, v) { state.cfg.texts[k] = v; document.querySelectorAll(`[data-k="${k}"]`).forEach(fillText); },
     enableEdit(handlers) { edit = handlers; },
     focusText(k) { const el = document.querySelector(`[data-k="${k}"]`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); },
+    previewIntro() { showIntro(true); },
     scrollToSection(id) { const el = document.querySelector(`[data-sec="${id}"]`); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
     async load() {
       let cfg = null, cats = [];
       try { [cfg, cats] = await Promise.all([Store.getConfig(), Store.getCategorias()]); } catch (e) { console.warn(e); }
+      let seen = false; try { seen = sessionStorage.getItem('mh_intro') === '1'; } catch {}
+      introOpen = merge(cfg).intro.enabled && !seen && !/[?&]intro=0/.test(location.search);
+      state.cfg = merge(cfg);
+      if (introOpen) showIntro();
       render(cfg, cats);
+      document.body.classList.add('loaded');
     },
   };
 })();

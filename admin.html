@@ -390,6 +390,14 @@ function paneImagenes(p) {
 }
 
 function paneSecciones(p) {
+  p.appendChild(h('Pantalla de inicio', 'Aparece una vez por visita, antes de entrar a la web. Sus textos se editan en la pestaña Textos.'));
+  const intro = document.createElement('div'); intro.className = 'sec-wrap';
+  intro.innerHTML = `<div class="sec"><span class="name">Pantalla de inicio</span>
+    <label style="display:flex;gap:4px;align-items:center;color:var(--grey)"><input type="checkbox" ${draft.intro.enabled ? 'checked' : ''}> Visible</label>
+    <button class="btn" type="button">Ver</button></div>`;
+  intro.querySelector('input').onchange = e => { draft.intro.enabled = e.target.checked; update(); };
+  intro.querySelector('button').onclick = () => Site.previewIntro();
+  p.appendChild(intro);
   p.appendChild(h('Orden y espaciado', 'La portada siempre va primero. El menú sigue el mismo orden.'));
   const secs = draft.sections;
   secs.forEach((s, i) => {
