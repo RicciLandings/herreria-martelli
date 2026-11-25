@@ -269,6 +269,7 @@
         if (img.complete) img.classList.add('ld');
         track.appendChild(img);
       });
+      if (multi) { const loop = track.firstChild.cloneNode(); loop.alt = ''; loop.setAttribute('aria-hidden', 'true'); loop.classList.add('ld'); track.appendChild(loop); }
       f.querySelector('.tag').textContent = it.nombre;
       const card = { el: f, n: it.imgs.length, i: 0, timer: null, user: false };
       if (multi) {
@@ -295,21 +296,24 @@
 
   // ---------- tarjetas con detalles: miniaturas y paneo automático ----------
   let cards = [], cardIO = null;
+  // j puede valer n (la copia de la primera foto): se anima hasta ahí y después salta sin animación a 0
   function goCard(card, j, instant) {
-    card.i = j;
     const track = card.el.querySelector('.slides');
+    clearTimeout(card.wrap);
     if (instant) track.style.transition = 'none';
     track.style.transform = `translate3d(${-j * 100}%, 0, 0)`;
     if (instant) { track.offsetWidth; track.style.transition = ''; }
-    card.el.querySelectorAll('.thumb').forEach((t, k) => t.classList.toggle('on', k === j));
+    card.i = j % card.n;
+    if (j === card.n) card.wrap = setTimeout(() => goCard(card, 0, true), 1150);
+    card.el.querySelectorAll('.thumb').forEach((t, k) => t.classList.toggle('on', k === card.i));
     const cnt = card.el.querySelector('.frame-count');
-    if (cnt) cnt.textContent = (j + 1) + ' / ' + card.n;
+    if (cnt) cnt.textContent = (card.i + 1) + ' / ' + card.n;
   }
   function startCard(card) {
     if (card.user || card.timer || edit || reduceMotion()) return;
     // primero se ve la foto principal un rato, después pasan los detalles
     const DUR = 2600;
-    const step = () => { goCard(card, (card.i + 1) % card.n); progress(card, DUR); card.timer = setTimeout(step, DUR); };
+    const step = () => { goCard(card, card.i + 1); progress(card, DUR); card.timer = setTimeout(step, DUR); };
     progress(card, 1000);
     card.timer = setTimeout(step, 1000);
   }
