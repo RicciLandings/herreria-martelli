@@ -22,7 +22,7 @@
       hero_cta: 'Pedir presupuesto',
       trabajos_eyebrow: 'Nuestro trabajo', trabajos_title: 'Trabajos',
       trabajos_sub: 'Diseño · Fabricación · Instalación',
-      trabajos_hint: 'Tocá una categoría para ver todas las fotos.',
+      trabajos_hint: 'Tocá una foto para verla en grande.', filter_all: 'Todos',
       sobre_eyebrow: 'El taller', sobre_title: 'Sobre el taller',
       sobre_zona: 'Zona Norte\nVicente López',
       sobre_p1: 'No solo fabricamos: diseñamos y desarrollamos cada proyecto, desde la primera idea hasta la instalación.',
@@ -44,7 +44,7 @@
   const TEXT_META = [
     ['Menú', [['brand', 'Nombre'], ['nav_trabajos', 'Link Trabajos'], ['nav_sobre', 'Link Sobre el taller'], ['nav_contacto', 'Link Contacto']]],
     ['Portada', [['hero_eyebrow', 'Volanta'], ['hero_title', 'Título'], ['hero_text', 'Texto'], ['hero_cta', 'Botón']]],
-    ['Trabajos', [['trabajos_eyebrow', 'Volanta'], ['trabajos_title', 'Título'], ['trabajos_sub', 'Servicios'], ['trabajos_hint', 'Ayuda']]],
+    ['Trabajos', [['trabajos_eyebrow', 'Volanta'], ['trabajos_title', 'Título'], ['trabajos_sub', 'Servicios'], ['filter_all', 'Botón "Todos"'], ['trabajos_hint', 'Ayuda']]],
     ['Sobre el taller', [['sobre_eyebrow', 'Volanta'], ['sobre_title', 'Título'], ['sobre_zona', 'Zona'], ['sobre_p1', 'Párrafo 1'], ['sobre_p2', 'Párrafo 2']]],
     ['Contacto', [['contacto_eyebrow', 'Volanta'], ['contacto_title', 'Título'], ['contacto_lead', 'Texto'], ['contacto_cta', 'Botón'],
       ['lbl_tel', 'Etiqueta teléfono'], ['val_tel', 'Teléfono'], ['lbl_mail', 'Etiqueta email'], ['val_mail', 'Email'],
@@ -81,13 +81,12 @@
     return '"' + name + '", "Helvetica Neue", Arial, sans-serif';
   }
 
-  let state = { cfg: merge(null), cats: [] };
+  let state = { cfg: merge(null), cats: [], filter: 'all' };
   let edit = null; // handlers del panel cuando está en modo edición
 
   const waUrl = c => 'https://wa.me/' + c.contact.whatsapp.replace(/\D/g, '') + '?text=' + encodeURIComponent(c.contact.message);
   const T = k => `<span data-k="${k}"></span>`;
   const panes = '<span></span>'.repeat(12);
-  const coverOf = cat => cat.portada || (cat.fotos[0] && cat.fotos[0].path) || '';
 
   // ---------- secciones ----------
   const SECTIONS = {
@@ -107,6 +106,7 @@
           <span class="eyebrow">${T('trabajos_eyebrow')}</span><div class="rule"></div><h2>${T('trabajos_title')}</h2>
         </div>
         <p class="services-line">${T('trabajos_sub')}</p>
+        <div class="filters" id="filtros" role="tablist" aria-label="Filtrar por rubro"></div>
         <div class="gallery-grid ${c.gallery.layout === 'carousel' ? 'carousel' : ''}" id="galeria"></div>
         <p class="gallery-note">${T('trabajos_hint')}</p>
       </section>`,
@@ -189,31 +189,71 @@
     const hi = document.querySelector('.hero-img');
     if (hi) { hi.src = Store.url(c.hero.image); hi.style.objectPosition = FOCUS[c.hero.focus] || FOCUS.center; }
 
-    // Categorías
-    const g = document.getElementById('galeria');
-    if (g) {
-      const list = state.cats.filter(cat => coverOf(cat));
-      list.forEach(cat => {
-        const f = document.createElement('figure');
-        f.className = 'cat-card';
-        f.tabIndex = 0;
-        f.dataset.cat = cat.id;
-        f.innerHTML = `<div class="frame"><img loading="lazy" alt=""><div class="panes">${panes}</div><span class="frame-more">Ver fotos →</span></div>
-          <figcaption><span class="tag"></span><span class="count"></span></figcaption>`;
-        const img = f.querySelector('img');
-        img.src = Store.url(coverOf(cat));
-        img.alt = cat.nombre;
-        img.style.objectPosition = FOCUS[cat.encuadre] || FOCUS.center;
-        f.querySelector('.tag').textContent = cat.nombre;
-        f.querySelector('.count').textContent = cat.fotos.length + (cat.fotos.length === 1 ? ' foto' : ' fotos');
-        g.appendChild(f);
-      });
-      if (!list.length) g.innerHTML = '<p class="gallery-empty">Pronto vas a ver acá nuestros trabajos.</p>';
-    }
+    // Trabajos con filtros por rubro
+    renderGallery();
 
     bind();
-    if (edit) enableEditing();
+    if (edit) enableEditing(); else reveal();
     window.scrollTo(0, y);
+  }
+
+  function renderGallery(animate) {
+    const g = document.getElementById('galeria'), fl = document.getElementById('filtros');
+    if (!g) return;
+    const cats = state.cats.filter(c => c.fotos.length);
+    if (state.filter !== 'all' && !cats.some(c => c.id === state.filter)) state.filter = 'all';
+    // botones de rubro
+    fl.innerHTML = '';
+    const chip = (id, label) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip' + (state.filter === id ? ' on' : '');
+      b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', state.filter === id);
+      if (id === 'all') b.innerHTML = T('filter_all'); else b.textContent = label;
+      b.onclick = e => { if (edit && e.target.closest('[data-k]')) return; state.filter = id; renderGallery(true); };
+      fl.appendChild(b);
+    };
+    chip('all');
+    cats.forEach(c => chip(c.id, c.nombre));
+    fl.querySelectorAll('[data-k]').forEach(fillText);
+    if (edit) fl.querySelectorAll('[data-k]').forEach(makeEditable);
+    fl.hidden = cats.length < 2;
+    // fotos
+    const list = [];
+    cats.forEach(c => { if (state.filter === 'all' || state.filter === c.id) c.fotos.forEach(f => list.push({ path: f.path, nombre: c.nombre, encuadre: c.encuadre })); });
+    g.innerHTML = '';
+    list.forEach((it, i) => {
+      const f = document.createElement('figure');
+      f.className = 'work' + (animate ? ' pop' : '');
+      if (animate) f.style.animationDelay = Math.min(i, 12) * 45 + 'ms';
+      f.tabIndex = 0;
+      f.innerHTML = `<div class="frame"><img loading="lazy" alt=""><div class="panes">${panes}</div></div><figcaption><span class="tag"></span></figcaption>`;
+      const img = f.querySelector('img');
+      img.src = Store.url(it.path); img.alt = it.nombre;
+      img.style.objectPosition = FOCUS[it.encuadre] || FOCUS.center;
+      f.querySelector('.tag').textContent = it.nombre;
+      const open = () => openLightbox(list, i);
+      f.onclick = open;
+      f.onkeydown = e => { if (e.key === 'Enter') open(); };
+      g.appendChild(f);
+    });
+    if (!list.length) g.innerHTML = '<p class="gallery-empty">Pronto vas a ver acá nuestros trabajos.</p>';
+  }
+
+  // Animación suave de entrada de textos
+  let io = null;
+  function reveal() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (io) io.disconnect();
+    io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }), { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    const groups = ['.hero-content > *', '.gallery .section-head, .services-line, .filters, .gallery-note',
+      '.about .section-head, .about-zone, .about-text p', '.contact .section-head, .contact .lead, .contact .cta, .contact-list li'];
+    groups.forEach((sel, gi) => document.querySelectorAll(sel).forEach((el, i) => {
+      el.classList.add('reveal');
+      el.style.setProperty('--d', (gi === 0 ? 0.15 + i * 0.14 : i * 0.08) + 's');
+      io.observe(el);
+    }));
   }
 
   function fillText(el) {
@@ -242,11 +282,6 @@
     document.getElementById('navBackdrop').onclick = () => setMenu(false);
     nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
     onScroll();
-    document.querySelectorAll('.cat-card').forEach(f => {
-      const open = () => openCategory(f.dataset.cat);
-      f.addEventListener('click', e => { if (!(edit && e.target.closest('[data-k]'))) open(); });
-      f.addEventListener('keydown', e => { if (e.key === 'Enter') open(); });
-    });
     header.classList.toggle('solid', window.scrollY > 40);
   }
 
@@ -263,50 +298,23 @@
   }
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  // ---------- vista de categoría y visor de fotos ----------
-  function openCategory(id) {
-    const cat = state.cats.find(c => c.id === id);
-    if (!cat) return;
-    const v = document.getElementById('catView');
-    v.querySelector('.cv-title').textContent = cat.nombre;
-    v.querySelector('.cv-count').textContent = cat.fotos.length + (cat.fotos.length === 1 ? ' foto' : ' fotos');
-    const grid = v.querySelector('.cv-grid');
-    grid.innerHTML = '';
-    cat.fotos.forEach((f, i) => {
-      const b = document.createElement('button');
-      b.className = 'cv-item';
-      b.setAttribute('aria-label', 'Ampliar foto ' + (i + 1));
-      b.innerHTML = '<img loading="lazy" alt="">';
-      b.querySelector('img').src = Store.url(f.path);
-      b.querySelector('img').alt = cat.nombre + ' ' + (i + 1);
-      b.onclick = () => openLightbox(cat, i);
-      grid.appendChild(b);
-    });
-    v.hidden = false;
-    v.scrollTop = 0;
-    document.body.classList.add('modal-open');
-    v.querySelector('.cv-close').focus();
-  }
-  function closeCategory() {
-    document.getElementById('catView').hidden = true;
-    document.body.classList.remove('modal-open');
-  }
-
+  // ---------- visor de fotos ----------
   let lbCat = null;
-  function openLightbox(cat, index) {
-    lbCat = cat;
+  function openLightbox(list, index) {
+    lbCat = { fotos: list };
     const lb = document.getElementById('lightbox');
     const track = lb.querySelector('.lb-track');
     track.innerHTML = '';
-    cat.fotos.forEach(f => {
+    list.forEach(f => {
       const d = document.createElement('div');
       d.className = 'lb-slide';
       d.innerHTML = '<img alt="">';
       d.querySelector('img').src = Store.url(f.path);
-      d.querySelector('img').alt = cat.nombre;
+      d.querySelector('img').alt = f.nombre;
       track.appendChild(d);
     });
     lb.hidden = false;
+    document.body.classList.add('modal-open');
     requestAnimationFrame(() => { track.scrollLeft = index * track.clientWidth; updateCount(); });
   }
   function updateCount() {
@@ -318,15 +326,10 @@
     const track = document.querySelector('#lightbox .lb-track');
     track.scrollBy({ left: d * track.clientWidth, behavior: 'smooth' });
   }
-  function closeLightbox() { document.getElementById('lightbox').hidden = true; }
+  function closeLightbox() { document.getElementById('lightbox').hidden = true; document.body.classList.remove('modal-open'); }
 
   document.addEventListener('DOMContentLoaded', () => {
     document.body.insertAdjacentHTML('beforeend', `
-      <div class="cat-view" id="catView" hidden role="dialog" aria-modal="true">
-        <div class="cv-head"><div><span class="eyebrow cv-count"></span><h2 class="cv-title"></h2></div>
-          <button class="cv-close" aria-label="Cerrar">✕</button></div>
-        <div class="cv-grid"></div>
-      </div>
       <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true">
         <div class="lb-track"></div>
         <button class="lb-btn lb-prev" aria-label="Anterior">‹</button>
@@ -334,14 +337,13 @@
         <button class="lb-close" aria-label="Cerrar">✕</button>
         <div class="lb-count"></div>
       </div>`);
-    document.querySelector('.cv-close').onclick = closeCategory;
     document.querySelector('.lb-close').onclick = closeLightbox;
     document.querySelector('.lb-prev').onclick = () => lbStep(-1);
     document.querySelector('.lb-next').onclick = () => lbStep(1);
     document.querySelector('.lb-track').addEventListener('scroll', () => lbCat && updateCount(), { passive: true });
     document.addEventListener('keydown', e => {
       const lbOpen = !document.getElementById('lightbox').hidden;
-      if (e.key === 'Escape') { if (lbOpen) closeLightbox(); else closeCategory(); }
+      if (e.key === 'Escape' && lbOpen) closeLightbox();
       if (lbOpen && e.key === 'ArrowRight') lbStep(1);
       if (lbOpen && e.key === 'ArrowLeft') lbStep(-1);
     });
@@ -350,19 +352,7 @@
   // ---------- modo edición (lo activa el panel) ----------
   function enableEditing() {
     document.body.classList.add('editing');
-    document.querySelectorAll('[data-k]').forEach(el => {
-      el.contentEditable = 'true';
-      el.spellcheck = false;
-      el.addEventListener('focus', () => edit.onSelect(el.dataset.k));
-      el.addEventListener('input', () => {
-        state.cfg.texts[el.dataset.k] = el.innerText.replace(/\n$/, '');
-        edit.onText(el.dataset.k, state.cfg.texts[el.dataset.k]);
-      });
-      el.addEventListener('paste', e => {
-        e.preventDefault();
-        document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text'));
-      });
-    });
+    document.querySelectorAll('#app [data-k]').forEach(makeEditable);
     // En edición, los links no navegan (para poder escribir sobre ellos)
     document.querySelectorAll('#app a').forEach(a => a.addEventListener('click', e => {
       if (a.getAttribute('href') && a.getAttribute('href').startsWith('#') && !e.target.closest('[data-k]')) return;
@@ -370,6 +360,25 @@
     }));
     const hi = document.querySelector('.hero-img');
     if (hi) hi.addEventListener('click', () => edit.onImage('hero'));
+  }
+
+  function makeEditable(el) {
+    if (el.isContentEditable) return;
+    {
+      el.contentEditable = 'true';
+      el.spellcheck = false;
+      el.addEventListener('focus', () => edit.onSelect(el.dataset.k));
+      el.addEventListener('input', () => {
+        // innerText respeta text-transform (mayúsculas); en esos casos usar textContent
+        const upper = getComputedStyle(el).textTransform !== 'none' || getComputedStyle(el.parentElement).textTransform !== 'none';
+        state.cfg.texts[el.dataset.k] = (upper ? el.textContent : el.innerText).replace(/\n$/, '');
+        edit.onText(el.dataset.k, state.cfg.texts[el.dataset.k]);
+      });
+      el.addEventListener('paste', e => {
+        e.preventDefault();
+        document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text'));
+      });
+    }
   }
 
   window.Site = {

@@ -297,7 +297,7 @@ function paneTextos(p) {
 }
 
 function paneTrabajos(p) {
-  p.appendChild(h('Categorías de trabajos', 'Cada categoría aparece en la web con su foto de portada. Al tocarla se ven todas sus fotos. Estos cambios se guardan al instante.'));
+  p.appendChild(h('Categorías de trabajos', 'Cada categoría es un botón de filtro en la web (además de "Todos"). Las fotos se muestran en el orden de acá. Estos cambios se guardan al instante.'));
   cats.forEach((cat, i) => {
     const el = document.createElement('div'); el.className = 'cat';
     const cover = cat.portada || (cat.fotos[0] && cat.fotos[0].path);
@@ -321,23 +321,20 @@ function paneTrabajos(p) {
     tg.onclick = () => { openCat = openCat === cat.id ? null : cat.id; renderPane(); };
     body.appendChild(tg);
     if (openCat === cat.id) {
-      body.appendChild(select('Encuadre de portada', cat.encuadre || 'center', FOCUS_OPTS, v => Store.updateCategoria(cat.id, { encuadre: v }).then(reloadCats).catch(fail)));
+      body.appendChild(select('Encuadre de las fotos', cat.encuadre || 'center', FOCUS_OPTS, v => Store.updateCategoria(cat.id, { encuadre: v }).then(reloadCats).catch(fail)));
       const grid = document.createElement('div'); grid.className = 'photos';
-      const coverIdx = Math.max(0, cat.fotos.findIndex(f => f.path === cover));
       cat.fotos.forEach((f, j) => {
-        const isCover = j === coverIdx;
         const it = document.createElement('div'); it.className = 'ph-item';
-        it.innerHTML = `<img alt="">${isCover ? '<span class="star">Portada</span>' : ''}<div class="bar">
-          <button title="Mover antes">←</button><button title="Usar de portada">★</button><button title="Mover después">→</button><button title="Borrar">✕</button></div>`;
+        it.innerHTML = `<img alt=""><div class="bar">
+          <button title="Mover antes">←</button><button title="Mover después">→</button><button title="Borrar">✕</button></div>`;
         it.querySelector('img').src = Store.url(f.path);
-        const [l, star, r, x] = it.querySelectorAll('.bar button');
-        l.disabled = j === 0; r.disabled = j === cat.fotos.length - 1; star.disabled = isCover;
+        const [l, r, x] = it.querySelectorAll('.bar button');
+        l.disabled = j === 0; r.disabled = j === cat.fotos.length - 1;
         const mv = async d => {
           try { const o = cat.fotos.slice(); [o[j], o[j + d]] = [o[j + d], o[j]];
             await Promise.all(o.map((ff, k) => Store.updateFoto(cat.id, ff.id, { orden: k }))); reloadCats(); } catch (e) { fail(e); }
         };
         l.onclick = () => mv(-1); r.onclick = () => mv(1);
-        star.onclick = () => Store.updateCategoria(cat.id, { portada: f.path }).then(reloadCats).catch(fail);
         x.onclick = async () => {
           if (!confirm('¿Borrar esta foto?')) return;
           try { if (cat.portada === f.path) await Store.updateCategoria(cat.id, { portada: null }); await Store.deleteFoto(cat.id, f); reloadCats(); } catch (e) { fail(e); }
@@ -365,7 +362,7 @@ function paneTrabajos(p) {
   btn.onclick = create; inp.onkeydown = e => e.key === 'Enter' && create();
   p.appendChild(add);
   const note = document.createElement('p'); note.className = 'hint'; note.style.marginTop = '8px';
-  note.textContent = 'Las categorías sin fotos no se muestran en la web.';
+  note.textContent = 'Las categorías sin fotos no aparecen como filtro en la web.';
   p.appendChild(note);
 }
 
