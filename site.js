@@ -326,6 +326,7 @@
   let galIO = null, galVisible = false, mobilePick = null;
   function setupMobileGallery(g) {
     const old = document.getElementById('galDots'); if (old) old.remove();
+    document.querySelectorAll('.gal-arrow').forEach(a => a.remove());
     if (galIO) { galIO.disconnect(); galIO = null; }
     mobilePick = null;
     const figs = [...g.querySelectorAll('.work')];
@@ -334,12 +335,35 @@
     dots.id = 'galDots'; dots.className = 'gal-dots';
     if (figs.length > 1) figs.forEach(() => dots.appendChild(document.createElement('span')));
     g.after(dots);
+    // flechas y arrastre con mouse (por si no hay pantalla táctil)
+    const go = d => { const f = figs[Math.max(0, Math.min(figs.length - 1, active + d))]; g.scrollTo({ left: f.offsetLeft - (g.clientWidth - f.offsetWidth) / 2, behavior: 'smooth' }); };
+    if (figs.length > 1) {
+      const wrap = g.parentElement;
+      [['prev', '‹', -1], ['next', '›', 1]].forEach(([cls, txt, d]) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'gal-arrow ' + cls; b.textContent = txt;
+        b.setAttribute('aria-label', d < 0 ? 'Foto anterior' : 'Foto siguiente');
+        b.onclick = () => go(d);
+        wrap.appendChild(b);
+      });
+    }
+    let drag = null;
+    g.onpointerdown = e => { if (e.pointerType !== 'mouse' || e.target.closest('.thumb')) return; e.preventDefault(); drag = { x: e.clientX, left: g.scrollLeft, moved: false }; g.classList.add('dragging'); };
+    g.ondragstart = e => e.preventDefault();
+    g.onpointermove = e => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 5) drag.moved = true; g.scrollLeft = drag.left - dx; };
+    const endDrag = () => { if (!drag) return; const moved = drag.moved; g.classList.remove('dragging'); drag = null; if (moved) { g.dataset.justDragged = '1'; setTimeout(() => delete g.dataset.justDragged, 60); mobilePick(); go(0); } };
+    g.onpointerup = endDrag; g.onpointerleave = endDrag;
+    g.addEventListener('click', e => { if (g.dataset.justDragged) { e.stopPropagation(); e.preventDefault(); } }, true);
     let active = -1, t = null;
     mobilePick = () => {
       const mid = g.scrollLeft + g.clientWidth / 2;
       let best = 0, dist = Infinity;
       figs.forEach((f, i) => { const d = Math.abs(f.offsetLeft + f.offsetWidth / 2 - mid); if (d < dist) { dist = d; best = i; } });
       dots.querySelectorAll('span').forEach((d, i) => d.classList.toggle('on', i === best));
+      const pa = document.querySelector('.gal-arrow.prev'), na = document.querySelector('.gal-arrow.next');
+      if (pa) pa.disabled = best === 0; if (na) na.disabled = best === figs.length - 1;
+      const fr = figs[0].querySelector('.frame');
+      if (fr) g.parentElement.style.setProperty('--arrow-top', (g.offsetTop + fr.offsetHeight / 2 - 20) + 'px');
       if (best !== active) {
         const prev = figs[active] && figs[active].card;
         if (prev) { stopCard(prev); if (prev.i !== 0) goCard(prev, 0, true); }

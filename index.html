@@ -284,6 +284,16 @@
     .gal-dots{display:flex; justify-content:center; gap:6px; margin-top:20px;}
     .gal-dots span{width:6px; height:6px; border-radius:6px; background:var(--line); transition:width .6s var(--ease-out), background .6s var(--ease);}
     .gal-dots span.on{width:20px; background:var(--ink);}
+    .gallery{position:relative;}
+    .gallery-grid.dragging{scroll-snap-type:none; cursor:grabbing;}
+    .gal-arrow{
+      position:absolute; z-index:3; width:40px; height:40px; border-radius:50%; border:0; cursor:pointer;
+      background:color-mix(in srgb, var(--paper) 88%, transparent); color:var(--ink); font-size:1.5rem; line-height:1;
+      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:0 4px 14px rgba(0,0,0,.18);
+      transition:opacity .5s var(--ease); top:var(--arrow-top, 50%);
+    }
+    .gal-arrow.prev{left:26px;} .gal-arrow.next{right:26px;}
+    .gal-arrow:disabled{opacity:0; pointer-events:none;}
   }
   .gal-dots:empty{display:none;}
   @media (max-width:560px){
