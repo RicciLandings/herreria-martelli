@@ -286,16 +286,18 @@
           th.appendChild(b);
         });
         cards.push(card);
+        f.card = card;
         if (canHover()) {
           f.addEventListener('mouseenter', () => { card.user = false; startCard(card); });
           f.addEventListener('mouseleave', () => { stopCard(card); if (card.i !== 0) goCard(card, card.n); });
-        } else cardObserver().observe(f);
+        } else if (!isMobile()) cardObserver().observe(f);
       }
       goCard(card, 0, true);
       f.querySelector('.frame').onclick = () => openLightbox(it.imgs.map(p => ({ path: p, nombre: it.nombre })), card.i);
       g.appendChild(f);
     });
     if (!list.length) g.innerHTML = '<p class="gallery-empty">Pronto vas a ver acá nuestros trabajos.</p>';
+    setupMobileGallery(g);
     if (!animate && !edit) revealWorks();
   }
 
@@ -315,6 +317,44 @@
     if (cnt) cnt.textContent = (card.i + 1) + ' / ' + card.n;
   }
   const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const MOBILE_Q = window.matchMedia('(max-width: 700px)');
+  const isMobile = () => MOBILE_Q.matches;
+  MOBILE_Q.addEventListener && MOBILE_Q.addEventListener('change', () => renderGallery());
+
+  // ---------- celular: una foto por vez, se desliza de costado ----------
+  // Solo la foto que está a la vista pasa sus detalles; abajo hay puntitos de posición.
+  let galIO = null, galVisible = false, mobilePick = null;
+  function setupMobileGallery(g) {
+    const old = document.getElementById('galDots'); if (old) old.remove();
+    if (galIO) { galIO.disconnect(); galIO = null; }
+    mobilePick = null;
+    const figs = [...g.querySelectorAll('.work')];
+    if (!isMobile() || !figs.length) return;
+    const dots = document.createElement('div');
+    dots.id = 'galDots'; dots.className = 'gal-dots';
+    if (figs.length > 1) figs.forEach(() => dots.appendChild(document.createElement('span')));
+    g.after(dots);
+    let active = -1, t = null;
+    mobilePick = () => {
+      const mid = g.scrollLeft + g.clientWidth / 2;
+      let best = 0, dist = Infinity;
+      figs.forEach((f, i) => { const d = Math.abs(f.offsetLeft + f.offsetWidth / 2 - mid); if (d < dist) { dist = d; best = i; } });
+      dots.querySelectorAll('span').forEach((d, i) => d.classList.toggle('on', i === best));
+      if (best !== active) {
+        const prev = figs[active] && figs[active].card;
+        if (prev) { stopCard(prev); if (prev.i !== 0) goCard(prev, 0, true); }
+        active = best;
+        if (figs[best].card) figs[best].card.user = false;
+      }
+      cards.forEach(c => { if (c !== figs[best].card) stopCard(c); });
+      const cur = figs[best].card;
+      if (cur) { if (galVisible && !introOpen) startCard(cur); else stopCard(cur); }
+    };
+    g.onscroll = () => { clearTimeout(t); t = setTimeout(mobilePick, 140); };
+    galIO = new IntersectionObserver(([e]) => { galVisible = e.isIntersecting; mobilePick && mobilePick(); }, { threshold: 0.55 });
+    galIO.observe(g);
+    mobilePick();
+  }
   function startCard(card) {
     if (card.user || card.timer || edit || reduceMotion()) return;
     // primero se ve la foto principal un rato, después pasan los detalles
@@ -435,9 +475,13 @@
     if (reduceMotion()) return;
     document.documentElement.classList.add('ready');
     io = new IntersectionObserver(entries => entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      if (!e.isIntersecting) return;
+      // en celular las fotos de Trabajos están en fila: al aparecer una, aparecen todas
+      const group = isMobile() && e.target.classList.contains('work') ? document.querySelectorAll('#galeria .work') : [e.target];
+      group.forEach(el => { el.classList.add('in'); io.unobserve(el); });
     }), { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
     document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
+    if (mobilePick) mobilePick();
 
   }
 

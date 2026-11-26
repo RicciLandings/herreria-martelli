@@ -271,6 +271,21 @@
     .gallery-grid{grid-template-columns:repeat(min(var(--cols), 2), 1fr); gap:calc(18px * var(--gap));}
     section{padding:calc(80px * var(--py,1)) 6vw;}
   }
+  /* celular: Trabajos de a una foto grande, deslizando de costado */
+  @media (max-width:700px){
+    .gallery-grid,.gallery-grid.carousel{
+      display:flex; position:relative; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:contain;
+      gap:12px; margin:0 -20px; padding:0 20px 4px; scroll-padding:0 20px;
+    }
+    .gallery-grid::-webkit-scrollbar{display:none;}
+    .gallery-grid figure,.gallery-grid.carousel figure{flex:0 0 calc(100% - 24px); scroll-snap-align:center; scroll-snap-stop:always;}
+    .gallery-grid figcaption{margin-top:12px; flex-direction:row; align-items:center;}
+    .thumb{width:36px; height:36px;}
+    .gal-dots{display:flex; justify-content:center; gap:6px; margin-top:20px;}
+    .gal-dots span{width:6px; height:6px; border-radius:6px; background:var(--line); transition:width .6s var(--ease-out), background .6s var(--ease);}
+    .gal-dots span.on{width:20px; background:var(--ink);}
+  }
+  .gal-dots:empty{display:none;}
   @media (max-width:560px){
     header{padding:14px 20px;}
     header.solid{padding:10px 20px;}
@@ -283,11 +298,6 @@
     .hero p{font-size:1rem; margin-top:16px;}
     .cta{display:flex; justify-content:center; width:100%; padding:16px;}
     .about-text p{font-size:1rem; line-height:1.7;}
-    .gallery-grid.carousel{margin:0 -20px; padding:0 20px 8px; gap:14px;}
-    .gallery-grid.carousel figure{flex:0 0 82%; scroll-snap-align:center;}
-    .gallery-grid:not(.carousel){gap:14px;}
-    .gallery-grid:not(.carousel) figcaption{margin-top:8px; flex-direction:column; align-items:flex-start; gap:8px;}
-    .thumb{width:28px; height:28px;}
     .contact p.lead{font-size:1.12rem;}
     .contact .section-head{margin-bottom:32px;}
     .contact-list li{flex-direction:column; gap:4px; padding:16px 0;}
