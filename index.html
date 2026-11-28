@@ -322,21 +322,28 @@
     .gallery-grid:not(.carousel) figcaption{margin-top:8px; flex-direction:column; align-items:flex-start; gap:8px;}
     .thumb{width:28px; height:28px;}
   }
+  /* "reducir movimiento" del sistema: sin desplazamientos ni zoom, pero con fundidos suaves */
   @media (prefers-reduced-motion: reduce){
     html{scroll-behavior:auto;}
-    *{transition:none !important; animation:none !important;}
-    .reveal{opacity:1; transform:none; filter:none;}
-    .slides img,.hero-media,.intro-title,.intro-btn,.intro .grid-mark{opacity:1; transform:none; filter:none;}
-    .intro-line{transform:none;}
+    .reveal,.hero-content .reveal,.reveal.words .wi,.intro-title,.intro-btn,.intro.leave .intro-in{transform:none !important;}
+    .reveal.words{opacity:0; transition:opacity 1.4s var(--ease-io) var(--d,0s);}
+    .reveal.words.in{opacity:1;}
+    .reveal.words .wi{transition:none;}
+    .reveal,.work.img-reveal .frame,.intro-title{filter:none !important;}
+    .work.img-reveal .slides{scale:1 !important;}
+    .section-head .rule{transform:none !important;}
+    .hero-img.on,.hero-img.off{animation:none;}
+    .work.pop{animation-name:fadeIn;}
+    .work:hover .slides img{transform:none;}
   }
 </style>
 </head>
 <body>
 <div id="app"></div>
 
-<script src="config.js?v=20261126"></script>
-<script src="store.js?v=20261126"></script>
-<script src="site.js?v=20261126"></script>
+<script src="config.js?v=20261128"></script>
+<script src="store.js?v=20261128"></script>
+<script src="site.js?v=20261128"></script>
 <script>
   // En el panel (?edit=1) la página la controla el editor; si no, carga lo publicado.
   if (!/[?&]edit=1/.test(location.search)) Site.load();

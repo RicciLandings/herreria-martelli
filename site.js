@@ -215,9 +215,9 @@
     g.querySelectorAll('.work').forEach(f => { f.classList.remove('pop'); f.classList.add('leaving'); });
     setTimeout(() => {
       if (token !== switchToken) return;
-      renderGallery(!reduce);
+      renderGallery(true);
       setTimeout(() => { if (token === switchToken) g.style.minHeight = ''; }, 1600);
-    }, reduce ? 0 : 320);
+    }, 320);
   }
 
   function renderGallery(animate) {
@@ -357,7 +357,7 @@
     mobilePick();
   }
   function startCard(card) {
-    if (card.user || card.timer || edit || reduceMotion()) return;
+    if (card.user || card.timer || edit) return;
     // primero se ve la foto principal un rato, después pasan los detalles
     const DUR = 2600;
     const step = () => { goCard(card, card.i + 1); progress(card, DUR); card.timer = setTimeout(step, DUR); };
@@ -407,7 +407,7 @@
       img.src = Store.url(path);
       box.appendChild(img);
     });
-    if (c.images.length < 2 || edit || reduceMotion()) return;
+    if (c.images.length < 2 || edit) return;
     let i = 0;
     heroTimer = setInterval(() => {
       const imgs = box.querySelectorAll('.hero-img');
@@ -447,7 +447,6 @@
     });
   }
   function reveal() {
-    if (reduceMotion()) return;
     if (io) io.disconnect();
     document.querySelectorAll('.hero h1, .section-head h2, .about-zone').forEach(splitWords);
     const groups = [
@@ -465,7 +464,6 @@
     if (!introOpen) observe();
   }
   function revealWorks() {
-    if (reduceMotion()) return;
     document.querySelectorAll('.work:not(.pop)').forEach((el, i) => {
       el.classList.add('reveal', 'img-reveal');
       el.style.setProperty('--d', ((i % 3) * 0.12).toFixed(2) + 's');
@@ -473,7 +471,6 @@
     });
   }
   function observe() {
-    if (reduceMotion()) return;
     document.documentElement.classList.add('ready');
     io = new IntersectionObserver(entries => entries.forEach(e => {
       if (!e.isIntersecting) return;
